@@ -1,7 +1,7 @@
 # SRS — Software Requirements Specification
 
 **Project:** [Photo Manager Application]  
-**Author:** [Author Name]  
+**Author:** [Artem Legeida]  
 **Date:** [Date]
 
 ---
@@ -27,29 +27,36 @@ This section describes the main system functions grouped by purpose: photo manag
 ### 3.1 Photo Management
 
 - FR-1.1: The user can import photos from local folders and external drives.
-- FR-1.2: The system supports the following formats: `.jpg`, `.png`, `.tiff`, paired RAW files, and `.heic`.
-- FR-1.3: Imported photos are displayed in albums or gallery view.
-- FR-1.4: The user can open a single photo from the gallery.
-- FR-1.5: The user can tag, rate, and comment on individual photos.
-- FR-1.6: The user can search and filter photos by date, tag, rating, or comment.
-- FR-1.7: The user can edit or create new photo categories.
-- FR-1.8: The system can load and display large libraries (up to 10,000 photos) without excessive memory usage.
-- FR-1.9: The app automatically saves user data (tags, edits, queue) every 30 seconds or after major actions.
+- FR-1.2: The application must be able to display all photos in supported formats located in the selected folder, including its subfolders.
+- FR-1.3: The system supports the following formats: `.jpg`, `.jpeg`,`.png`, `.tiff`, `.gif`, and `.bmp`.
+- FR-1.4: Imported photos are displayed in albums or gallery view.
+- FR-1.5: The number of displayed thumbnails must be adapted to the size of the display window in which the gallery is shown.
+- FR-1.6: The user can open a single photo from the gallery.
+- FR-1.7: Each photo can be displayed in its original resolution after being selected from the gallery. If the photo is larger than the display window, the user must have the option to scroll within the window to view the entire image.
+- FR-1.8: The user can tag, rate, and comment on individual photos.
+- FR-1.9: For each photo, it must be possible to add one tag and one rating (1–5). If no rating is provided, the photo is considered unrated.
+- FR-1.10: The user can search and filter photos by date, tag or rating.
+- FR-1.11: The user can edit or create new photo tag.
+- FR-1.12: The system can load and display large libraries (up to 10,000 photos) without excessive memory usage.
+- FR-1.13: The app automatically saves user data (tags, edits, queue) every 30 seconds or after major actions.
 
 ### 3.2 Photo Editing
 
 - FR-2.1: The user can perform basic edits, including crop, rotate, brightness, contrast, and sharpness adjustments.
-- FR-2.2: The user can apply edits to a single image or a group of selected images.
-- FR-2.3: The user can add a watermark or logo with adjustable position (corner selection) and transparency.
-- FR-2.4: The system provides undo and redo options for basic edits.
-- FR-2.5: Edited photos can be exported to `.jpg`, `.png`, and `.tiff` formats.
+- FR-2.2: It must be possible to apply predefined filters: grayscale (monochromatic), sepia, negative, pastel effect, and vintage.
+- FR-2.3: The user can apply edits to a single image or a group of selected images.
+- FR-2.4: The user can add a watermark or logo with adjustable position (corner selection) and transparency.
+- FR-2.5: The user can specify the watermark image.
+- FR-2.6: The system provides undo and redo options for basic edits.
+- FR-2.7: Each photo, either after editing or without any modifications, can be exported to `.jpg`, `.jpeg`,`.png`, `.tiff`, `.gif`, and `.bmp` formats.
 
 ### 3.3 User Interface and Interaction
 
-- FR-3.1: The system includes a progress bar for long-running operations (e.g., batch processing, large imports).
-- FR-3.2: The app must start easily on Windows (portable EXE or simple installer).
-- FR-3.3: The system provides an auto-save mechanism to prevent loss of edits after crashes.
-- FR-3.4: Developers must provide weekly progress updates to the customer (internal reporting).
+- FR-3.1: The user interface (UI) must be clear and unambiguously described.
+- FR-3.2: The system includes a progress bar for long-running operations (e.g., batch processing, large imports).
+- FR-3.3: The app must start easily on Windows (portable EXE or simple installer).
+- FR-3.4: The system provides an auto-save mechanism to prevent loss of edits after crashes.
+- FR-3.5: Developers must provide weekly progress updates to the customer (internal reporting).
 
 ## 4. Non-Functional Requirements (NFR)
 
@@ -57,7 +64,7 @@ This section describes the main system functions grouped by purpose: photo manag
 | --------------- | ----- | -------------------------------------------------------------- |
 | **Performance** | NFR-1 | Load 10000 photos within 10 seconds after opening the catalog. |
 | **Reliability** | NFR-2 | Application autosaves the last opened folder and user session. |
-| **Usability**   | NFR-3 | Basic edit operation can be performed in max. 10 clicks.       |
+| **Usability**   | NFR-3 | Basic edit operation can be performed in max. 14 clicks.       |
 | **Portability** | NFR-4 | Works on Windows.                                              |
 | **Security**    | NFR-5 | Local data are stored privately and never shared.              |
 
