@@ -96,26 +96,7 @@ This section describes the main system functions grouped by purpose: photo manag
 
 ## 5.3 Use-Case Diagram
 
-> Create your **Use-Case Diagram** in draw.io (or similar).  
-> Export it as a PNG and place it into the `diagrams/` folder.  
-> Example below shows relationships between use-cases.
-
-![Use-Case Diagram — sample](diagrams/sample.drawio.png)
-
-_Example explanation:_
-
-- Main use case: **“Print Hello World”**
-- `<<include>>`: from **Print Hello World → Create New Application** (mandatory step)
-- `<<extend>>`: from **Output to Console → Print Hello World** (optional extension)
-
-In this use-case diagram, the main actor interacts with the C++ Learning App.
-The main use case is “Print Hello World”, which represents the user’s goal of creating and running a simple program that prints text.
-
-The use case “Create New Application” is connected to “Print Hello World” with an `<<include>>` relationship.
-→ This means that every time the user prints “Hello World”, the system must first create a new application.
-
-The use case “Output to Console” is connected to “Print Hello World” with an `<<extend>>` relationship.
-→ This means that optionally, the printing process may be extended to include the step of showing the output on the console.
+![Use-Case Diagram — sample](diag/CaseEdit.drawio.png)
 
 ---
 
