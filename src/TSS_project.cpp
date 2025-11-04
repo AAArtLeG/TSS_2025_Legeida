@@ -6,7 +6,7 @@
 
 TSS_project::TSS_project(QWidget *parent)
     : QMainWindow(parent),
-    ui(new Ui::TSS_projectClass),          // ? ??????? ui!
+    ui(new Ui::TSS_projectClass),         
     scene(new QGraphicsScene(this))
 {
     ui->setupUi(this);
@@ -14,15 +14,34 @@ TSS_project::TSS_project(QWidget *parent)
 
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
+    currentImage = nullptr;
 }
 
 TSS_project::~TSS_project()
 {}
 
-
 void TSS_project::on_actionOpen_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
+    if (fileName.isEmpty()) return;
+
+    QImage img(fileName);
+    if (img.isNull()) return;
+    
+    currentImage = &img;
+    scene->clear();
+    item = scene->addPixmap(QPixmap::fromImage(img));
+    item->setTransformationMode(Qt::SmoothTransformation);
+    scene->setSceneRect(item->boundingRect());
+    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+}
+
+void TSS_project::on_actionSaveAs_triggered()
+{
+    if (currentImage == nullptr)
+        return;
+
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
     if (fileName.isEmpty()) return;
 
     QImage img(fileName);

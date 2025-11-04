@@ -3,6 +3,8 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets>
 #include "ui_TSS_project.h"
+  
+
 
 class TSS_project : public QMainWindow
 {
@@ -17,9 +19,11 @@ private:
 
     QGraphicsScene* scene = nullptr;
     QGraphicsPixmapItem* item = nullptr;
+    QImage* currentImage;
+
 
 private slots:
     //fileDialogFunctions
     void on_actionOpen_triggered();
-    //void on_actionSaveAs_triggered();
+    void on_actionSaveAs_triggered();
 };
