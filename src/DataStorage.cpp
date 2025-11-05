@@ -11,10 +11,10 @@ void DataStorage::setImgPath(QString path) {
 	this->imgPath = path;
 };
 
-QString DataStorage::getImgName() {
-	return this->imgName;
+const QString& DataStorage::getImgName() const {
+	return imgName;
 };
 
-QString DataStorage::getImgPath() {
-	return this->imgPath;
+const QString& DataStorage::getImgPath() const {
+	return imgPath;
 };

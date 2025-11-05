@@ -5,18 +5,19 @@
 #include <QString>
 #include <QVector>
 
+
+
 class DataStorage
 {
 public:
 	DataStorage();
 	~DataStorage();
 
-	QString getImgName();
-	QString getImgPath();
+	const QString& getImgName() const;
+	const QString& getImgPath() const;
 	void setImgName(QString name);
 	void setImgPath(QString path);
 private:
 	QString imgPath;
 	QString imgName;
 };
-
