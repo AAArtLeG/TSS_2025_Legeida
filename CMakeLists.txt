@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.16.0)
 
 PROJECT(TSS_App VERSION 1.0.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (MSVC)
@@ -23,14 +23,16 @@ set(Qt6GuiTools_DIR "C:/Qt/${Qt6_Version}/msvc2022_64/lib/cmake/Qt6GuiTools")
 
 find_package(Qt6 COMPONENTS Widgets Core Gui REQUIRED)
 
-file(GLOB UI_FILES src/*.ui)
-file(GLOB H_FILES src/*.h)
-file(GLOB CPP_FILES src/*.cpp)
-file(GLOB QRC_FILES src/*.qrc)
+file(GLOB_RECURSE UI_FILES  CONFIGURE_DEPENDS "src/*.ui")
+file(GLOB_RECURSE H_FILES   CONFIGURE_DEPENDS "src/*.h")
+file(GLOB_RECURSE CPP_FILES CONFIGURE_DEPENDS "src/*.cpp")
+file(GLOB_RECURSE QRC_FILES CONFIGURE_DEPENDS "src/*.qrc")
 
 set(SOURCE_LIST ${CPP_FILES} ${UI_FILES} ${H_FILES} ${QRC_FILES})
 
 add_executable(${PROJECT_NAME} ${SOURCE_LIST})
+
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui)
 
