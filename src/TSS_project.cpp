@@ -7,6 +7,9 @@
 #include <QMessageBox>
 #include <QDebug>
 #include <QDirIterator>
+#include <vector>
+#include <QImageReader>
+#include <QGraphicsSimpleTextItem>
 
 TSS_project::TSS_project(QWidget *parent)
     : QMainWindow(parent),
@@ -20,6 +23,7 @@ TSS_project::TSS_project(QWidget *parent)
     ui->graphicsView->setScene(scene);
     currentImage = nullptr;
     dataBase = new QVector<DataStorage>;
+    currentPage.resize(numOfImgs);
 }
 
 TSS_project::~TSS_project()
@@ -59,6 +63,10 @@ void TSS_project::on_actionSaveAs_triggered()
     item->setTransformationMode(Qt::SmoothTransformation);
     scene->setSceneRect(item->boundingRect());
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+}
+
+void TSS_project::checkNumOfImg() {
+    numOfImgs = ui->comboSelectNumOfImgs->currentIndex();
 }
 
 void TSS_project::scanFolderOnce(const QString& dirPath) {
@@ -102,12 +110,38 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
     }
 }
 
+void TSS_project::showPage() {
+    
+}
+
+void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
+    numOfImgs = ui->comboSelectNumOfImgs->currentIndex();
+    if (isFolderOpenned) {
+        int currentFirstIndex = currentPage[0];
+        currentPage.resize(numOfImgs);
+        for (int i = 0; i < numOfImgs; i++) {
+            currentPage[i] = i + currentFirstIndex;
+        }
+        showPage();
+    }
+
+}
+
 void TSS_project::on_actionOpen_folder_triggered() {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Select Folder"));
     if (dir.isEmpty()) return;
     scanFolderOnce(dir);
 
-    if (!dataBase->isEmpty()) {
+    checkNumOfImg();
+    currentPage.resize(numOfImgs);
+    for (int i = 0; i < numOfImgs; i++) {
+        currentPage[i] = i;
+    }
+
+    showPage();
+
+    //show first picture
+    /*if (!dataBase->isEmpty()) {
         const QString& path = dataBase->at(0).getImgPath();    
         QImage img(path);
         if (!img.isNull()) {
@@ -117,5 +151,5 @@ void TSS_project::on_actionOpen_folder_triggered() {
             scene->setSceneRect(item->boundingRect());
             ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
         }
-    }
+    }*/
 }
