@@ -38,4 +38,6 @@ private slots:
     void on_actionSaveAs_triggered();
     void on_actionOpen_folder_triggered();
     void on_comboSelectNumOfImgs_currentIndexChanged();
+    void on_buttonLeftScroll_clicked();
+    void on_buttonRightScroll_clicked();
 };

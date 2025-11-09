@@ -66,7 +66,7 @@ void TSS_project::on_actionSaveAs_triggered()
 }
 
 void TSS_project::checkNumOfImg() {
-    numOfImgs = ui->comboSelectNumOfImgs->currentIndex();
+    numOfImgs = ui->comboSelectNumOfImgs->currentIndex() + 1;
 }
 
 void TSS_project::scanFolderOnce(const QString& dirPath) {
@@ -111,7 +111,19 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
 }
 
 void TSS_project::showPage() {
-    
+    scene->clear();
+    if (numOfImgs == 1) {
+        const QString& path = dataBase->at(currentPage[0]).getImgPath();
+        QImage img(path);
+        if (!img.isNull()) {
+            scene->clear();
+            item = scene->addPixmap(QPixmap::fromImage(img));
+            item->setTransformationMode(Qt::SmoothTransformation);
+            scene->setSceneRect(item->boundingRect());
+            ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+        }
+        return;
+    }
 }
 
 void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
@@ -152,4 +164,24 @@ void TSS_project::on_actionOpen_folder_triggered() {
             ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
         }
     }*/
+}
+
+void TSS_project::on_buttonLeftScroll_clicked() {
+    if (currentPage[0] - numOfImgs < 0)
+        return;
+
+    for (int i = 0; i < numOfImgs; i++)
+        currentPage[i] -= numOfImgs;
+
+    showPage();
+}
+
+void TSS_project::on_buttonRightScroll_clicked() {
+    if (currentPage[numOfImgs - 1] + numOfImgs > dataBase->size())
+        return;
+
+    for (int i = 0; i < numOfImgs; i++)
+        currentPage[i] += numOfImgs;
+
+    showPage();
 }
