@@ -104,7 +104,7 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
 
     QDirIterator it(
         dirPath, // root folder
-        { "*.png","*.jpg","*.jpeg","*.bmp","*.gif","*.tif","*.tiff","*.webp"}, // types of files
+        { "*.png","*.jpg","*.jpeg","*.bmp","*.gif","*.tif","*.tiff","*.webp"},
         QDir::Files | QDir::NoDotAndDotDot,
         QDirIterator::Subdirectories              
     );
@@ -165,11 +165,9 @@ void TSS_project::showPage() {
         thumbH = (gViewH - 3 * hGap) / rows;
     }
 
-        // отступы между ячейками
-    const int margin = 16;             // поля по краям
+    const int margin = 16;             
     const QFont labelFont("Segoe UI", 9);
 
-    // Сколько картинок показываем (пример: первые 4)
     const int count = numOfImgs;
     if (count == 0) return;
 
