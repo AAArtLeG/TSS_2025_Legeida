@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1025</width>
+    <width>1011</width>
     <height>671</height>
    </rect>
   </property>
@@ -17,7 +17,7 @@
    <widget class="QGraphicsView" name="graphicsView">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>180</x>
       <y>20</y>
       <width>931</width>
       <height>541</height>
@@ -27,7 +27,7 @@
    <widget class="QPushButton" name="buttonLeftScroll">
     <property name="geometry">
      <rect>
-      <x>760</x>
+      <x>900</x>
       <y>570</y>
       <width>41</width>
       <height>24</height>
@@ -40,7 +40,7 @@
    <widget class="QPushButton" name="buttonRightScroll">
     <property name="geometry">
      <rect>
-      <x>800</x>
+      <x>940</x>
       <y>570</y>
       <width>41</width>
       <height>24</height>
@@ -53,7 +53,7 @@
    <widget class="QComboBox" name="comboSelectNumOfImgs">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>300</x>
       <y>570</y>
       <width>80</width>
       <height>24</height>
@@ -80,13 +80,46 @@
      </property>
     </item>
    </widget>
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>20</y>
+      <width>166</width>
+      <height>541</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <item row="2" column="1">
+      <widget class="QPushButton" name="rightRotation">
+       <property name="text">
+        <string>-90</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="leftRotation">
+       <property name="text">
+        <string>+90</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Rotate</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1025</width>
+     <width>1011</width>
      <height>33</height>
     </rect>
    </property>

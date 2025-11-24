@@ -195,7 +195,7 @@ void TSS_project::showPage() {
         QPixmap pm = QPixmap::fromImage(thumb);
         auto* pix = scene->addPixmap(pm);
 
-        // center
+        // centered
         const int px = cellX + (thumbW - pm.width()) / 2;
         const int py = cellY + (thumbH - pm.height()) / 2;
         pix->setPos(px, py);
@@ -220,7 +220,7 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
         currentPage.resize(numOfImgs);
         for (int i = 0; i < numOfImgs; i++) {
             currentPage[i] = i + currentFirstIndex;
-            std::cout << "currentPage idx: " << i << "currentPage[idx] val: " << std::endl;
+            //std::cout << "currentPage idx: " << i << "currentPage[idx] val: " << std::endl;
         }
 
         showPage();
