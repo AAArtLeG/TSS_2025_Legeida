@@ -5,6 +5,7 @@
 #include <vector>
 #include "ui_TSS_project.h"
 #include "DataStorage.h"
+#include "ClickableImgs.h"
 
 class TSS_project : public QMainWindow
 {
@@ -32,6 +33,7 @@ private:
     void checkNumOfImg();
     void scanFolderOnce(const QString& dirPath);
     void showPage();
+    void showImg(const QString imgPath);
 private slots:
     //fileDialogFunctions
     void on_actionOpen_triggered();

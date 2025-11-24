@@ -121,6 +121,17 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
     }
 }
 
+void TSS_project::showImg(const QString imgPath) {
+    QImage img(imgPath);
+    if (!img.isNull()) {
+        scene->clear();
+        item = scene->addPixmap(QPixmap::fromImage(img));
+        item->setTransformationMode(Qt::SmoothTransformation);
+        scene->setSceneRect(item->boundingRect());
+        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    }
+}
+
 void TSS_project::showPage() {
     scene->clear();
     if (numOfImgs == 1) {
@@ -142,9 +153,10 @@ void TSS_project::showPage() {
     // grid parameters
     int cols = 0;
     int rows = 0;
-    int thumbW = 0;           
+    int thumbW = 0;
     int thumbH = 0;
     const int wGap = 16, hGap = 20;
+
     if (numOfImgs == 2 || numOfImgs == 4) {
         cols = 2;
         if (numOfImgs == 2) {
@@ -158,14 +170,14 @@ void TSS_project::showPage() {
         thumbW = (gViewW - 3 * wGap) / cols;
     }
 
-    if (numOfImgs == 8){
+    if (numOfImgs == 8) {
         cols = 4;
         rows = 2;
         thumbW = (gViewW - 5 * wGap) / cols;
         thumbH = (gViewH - 3 * hGap) / rows;
     }
 
-    const int margin = 16;             
+    const int margin = 16;
     const QFont labelFont("Segoe UI", 9);
 
     const int count = numOfImgs;
@@ -183,17 +195,18 @@ void TSS_project::showPage() {
 
         const QString path = dataBase->at(currentPage[i]).getImgPath();
         QImageReader reader(path);
-     
+
         QSize target(thumbW, thumbH);
         reader.setScaledSize(target);
 
         QImage thumb = reader.read();
         if (thumb.isNull()) {
-            std::cout << "thumb on iter " << i << "is null" << std::endl;
+            std::cout << "thumb on iter " << i << " is null" << std::endl;
         }
 
         QPixmap pm = QPixmap::fromImage(thumb);
-        auto* pix = scene->addPixmap(pm);
+        auto* pix = new ClickableImgs(pm);
+        scene->addItem(pix); // teraz na scene pridavame ne proste QPixmap, a elem ClickableImgs
 
         // centered
         const int px = cellX + (thumbW - pm.width()) / 2;
@@ -201,6 +214,15 @@ void TSS_project::showPage() {
         pix->setPos(px, py);
         pix->setTransformationMode(Qt::SmoothTransformation);
         pix->setFlag(QGraphicsItem::ItemIsSelectable, true);
+        pix->setData(Qt::UserRole, path);
+
+        connect(pix, &ClickableImgs::doubleClicked, this, // связываю дабл клик и ловлю по какой конкретно картинке он был
+            [this](QGraphicsPixmapItem* p) {
+                const QString imgPath = p->data(Qt::UserRole).toString();
+                QTimer::singleShot(0, this, [this, imgPath] {
+                    showImg(imgPath);   // call func showImg AFTER prev reading imgPath
+                });
+            });
 
         auto* label = scene->addSimpleText(dataBase->at(currentPage[i]).getImgName(), labelFont);
         label->setBrush(QColor(60, 60, 60));
