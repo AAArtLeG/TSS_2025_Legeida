@@ -22,7 +22,6 @@ TSS_project::TSS_project(QWidget *parent)
 
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
-    currentImage = nullptr;
     dataBase = new QVector<DataStorage>;
     currentPage.resize(numOfImgs);
 }
@@ -40,7 +39,7 @@ void TSS_project::on_actionOpen_triggered()
     QImage img(fileName);
     if (img.isNull()) return;
     
-    currentImage = &img;
+    currentImage = img;
     scene->clear();
     item = scene->addPixmap(QPixmap::fromImage(img));
     item->setTransformationMode(Qt::SmoothTransformation);
@@ -50,7 +49,7 @@ void TSS_project::on_actionOpen_triggered()
 
 void TSS_project::on_actionSaveAs_triggered()
 {
-    if (currentImage == nullptr)
+    if (currentImage.isNull())
         return;
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
@@ -124,6 +123,7 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
 void TSS_project::showImg(const QString imgPath) {
     QImage img(imgPath);
     if (!img.isNull()) {
+        currentImage = img;
         scene->clear();
         item = scene->addPixmap(QPixmap::fromImage(img));
         item->setTransformationMode(Qt::SmoothTransformation);
@@ -301,5 +301,72 @@ void TSS_project::on_buttonRightScroll_clicked() {
             currentPage[i] += numOfImgs;
 
         showPage();
+    }
+}
+
+void TSS_project::on_leftRotation_clicked() {
+    if (currentImage.isNull()) return;
+    QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
+
+    QImage dst(src.height(), src.width(), QImage::Format_ARGB32); // swap h and w
+
+    int w = src.width();
+    int h = src.height();
+
+    Q_ASSERT(dst.width() == h);
+    Q_ASSERT(dst.height() == w);
+
+    for (int i = 0; i < h; i++) { // y
+        const QRgb* srow = reinterpret_cast<const QRgb*>(src.constScanLine(i)); // i-ty riadok
+        for (int j = 0; j < w; j++) { // x
+            int newJ = i; 
+            int newI = w - 1 - j; 
+
+            QRgb* drow = reinterpret_cast<QRgb*>(dst.scanLine(newI)); // new row
+
+            drow[newJ] = srow[j];
+        }
+    }
+
+    if (!dst.isNull()) {
+        QImage img = dst;
+        scene->clear();
+        item = scene->addPixmap(QPixmap::fromImage(img));
+        item->setTransformationMode(Qt::SmoothTransformation);
+        scene->setSceneRect(item->boundingRect());
+        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    }
+}
+
+void TSS_project::on_rightRotation_clicked() {
+    if (currentImage.isNull()) return;
+    QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
+
+    QImage dst(src.height(), src.width(), QImage::Format_ARGB32); // swap h and w
+
+    int w = src.width();
+    int h = src.height();
+
+    Q_ASSERT(dst.width() == h);
+    Q_ASSERT(dst.height() == w);
+
+    for (int i = 0; i < h; i++) { // y
+        const QRgb* srow = reinterpret_cast<const QRgb*>(src.constScanLine(i)); // i-ty riadok
+        for (int j = 0; j < w; j++) { // x
+            int newI = j;
+            int newJ = h - 1 - i;
+
+            QRgb* drow = reinterpret_cast<QRgb*>(dst.scanLine(newI)); // new row
+            drow[newJ] = srow[j];
+        }
+    }
+
+    if (!dst.isNull()) {
+        QImage img = dst;
+        scene->clear();
+        item = scene->addPixmap(QPixmap::fromImage(img));
+        item->setTransformationMode(Qt::SmoothTransformation);
+        scene->setSceneRect(item->boundingRect());
+        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
     }
 }

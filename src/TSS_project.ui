@@ -91,14 +91,14 @@
     </property>
     <layout class="QGridLayout" name="gridLayout">
      <item row="2" column="1">
-      <widget class="QPushButton" name="rightRotation">
+      <widget class="QPushButton" name="leftRotation">
        <property name="text">
         <string>-90</string>
        </property>
       </widget>
      </item>
      <item row="2" column="2">
-      <widget class="QPushButton" name="leftRotation">
+      <widget class="QPushButton" name="rightRotation">
        <property name="text">
         <string>+90</string>
        </property>

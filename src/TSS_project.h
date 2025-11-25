@@ -20,7 +20,7 @@ private:
 
     QGraphicsScene* scene = nullptr;
     QGraphicsPixmapItem* item = nullptr;
-    QImage* currentImage;
+    QImage currentImage;
 
     std::vector<int> currentPage;
     int numOfImgs = 1;
@@ -42,4 +42,6 @@ private slots:
     void on_comboSelectNumOfImgs_currentIndexChanged();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
+    void on_leftRotation_clicked();
+    void on_rightRotation_clicked();
 };
