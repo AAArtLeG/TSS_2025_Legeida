@@ -21,10 +21,13 @@ private:
     QGraphicsScene* scene = nullptr;
     QGraphicsPixmapItem* item = nullptr;
     QImage currentImage;
+    QString currentImgPath;
+	QString currentImgName;
 
     std::vector<int> currentPage;
     int numOfImgs = 1;
     bool isFolderOpenned = false;
+    bool isEditing = false;
     //int prevNumOfImgs = 1;
     
 
@@ -33,7 +36,8 @@ private:
     void checkNumOfImg();
     void scanFolderOnce(const QString& dirPath);
     void showPage();
-    void showImg(const QString imgPath);
+    void showImg(const QString imgPath, const QString imgName);
+    bool saveCurrentImage();
 private slots:
     //fileDialogFunctions
     void on_actionOpen_triggered();

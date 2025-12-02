@@ -65,6 +65,23 @@ void TSS_project::on_actionSaveAs_triggered()
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 }
 
+bool TSS_project::saveCurrentImage() {
+    if (currentImage.isNull()) return false;
+
+    if (currentImgPath.isEmpty())
+        return false;
+
+    QImageWriter writer(currentImgPath);      // automaticly detected format
+
+    const bool ok = writer.write(currentImage);
+    if (!ok) {
+        QMessageBox::warning(this, tr("Save failed"), writer.errorString());
+        return false;
+    }
+    isEditing = false;
+    return true;
+}
+
 void TSS_project::checkNumOfImg() {
     if (ui->comboSelectNumOfImgs->currentIndex() == 0)
         numOfImgs = 1;
@@ -120,10 +137,13 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
     }
 }
 
-void TSS_project::showImg(const QString imgPath) {
+void TSS_project::showImg(const QString imgPath, const QString imgName) {
     QImage img(imgPath);
     if (!img.isNull()) {
         currentImage = img;
+        currentImgPath = imgPath;
+        currentImgName = imgName;
+
         scene->clear();
         item = scene->addPixmap(QPixmap::fromImage(img));
         item->setTransformationMode(Qt::SmoothTransformation);
@@ -194,6 +214,7 @@ void TSS_project::showPage() {
         const int cellY = margin + r * (thumbH + 36 + hGap); // +36 for img name
 
         const QString path = dataBase->at(currentPage[i]).getImgPath();
+        const QString name = dataBase->at(currentPage[i]).getImgName();
         QImageReader reader(path);
 
         QSize target(thumbW, thumbH);
@@ -215,12 +236,12 @@ void TSS_project::showPage() {
         pix->setTransformationMode(Qt::SmoothTransformation);
         pix->setFlag(QGraphicsItem::ItemIsSelectable, true);
         pix->setData(Qt::UserRole, path);
+        pix->setData(Qt::UserRole + 1, name);
 
-        connect(pix, &ClickableImgs::doubleClicked, this, // связываю дабл клик и ловлю по какой конкретно картинке он был
-            [this](QGraphicsPixmapItem* p) {
-                const QString imgPath = p->data(Qt::UserRole).toString();
-                QTimer::singleShot(0, this, [this, imgPath] {
-                    showImg(imgPath);   // call func showImg AFTER prev reading imgPath
+        connect(pix,  &ClickableImgs::doubleClicked, this, // связываю дабл клик и ловлю по какой конкретно картинке он был
+            [this, path, name](QGraphicsPixmapItem* p) {
+                QTimer::singleShot(0, this, [this, path, name] {
+                    showImg(path, name);   // call func showImg AFTER prev reading imgPath
                 });
             });
 
@@ -281,6 +302,39 @@ void TSS_project::on_actionOpen_folder_triggered() {
 
 void TSS_project::on_buttonLeftScroll_clicked() {
     if (isFolderOpenned) {
+
+        if (isEditing) {
+            QMessageBox box(this);
+            box.setIcon(QMessageBox::Question);
+            box.setWindowTitle(tr("Unsaved changes"));
+            box.setText(tr("You have unsaved changes. Save before navigating away?"));
+
+            QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
+            QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+            QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+            box.setDefaultButton(btnSave);
+
+            box.exec();
+
+            if (box.clickedButton() == btnSave) {
+                if (saveCurrentImage())
+                    return;
+                else
+                    std::cout << "Error during saving";
+            }
+            else if (box.clickedButton() == btnSaveAs) {
+                
+            }
+            else if (box.clickedButton() == btnDiscard) {
+                
+            }
+            else {
+                
+            }
+        }
+
         if (currentPage[0] - numOfImgs < 0)
             return;
 
@@ -293,6 +347,39 @@ void TSS_project::on_buttonLeftScroll_clicked() {
 
 void TSS_project::on_buttonRightScroll_clicked() {
     if (isFolderOpenned) {
+
+        if (isEditing) {
+            QMessageBox box(this);
+            box.setIcon(QMessageBox::Question);
+            box.setWindowTitle(tr("Unsaved changes"));
+            box.setText(tr("You have unsaved changes. Save before navigating away?"));
+
+            QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
+            QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+            QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+            box.setDefaultButton(btnSave);
+
+            box.exec();
+
+            if (box.clickedButton() == btnSave) {
+                if (saveCurrentImage())
+                    return;
+                else
+                    std::cout << "Error during saving";
+            }
+            else if (box.clickedButton() == btnSaveAs) {
+
+            }
+            else if (box.clickedButton() == btnDiscard) {
+
+            }
+            else {
+
+            }
+        }
+
         if (currentPage[numOfImgs - 1] + numOfImgs > dataBase->size() - 1)
             return;
 
@@ -306,6 +393,12 @@ void TSS_project::on_buttonRightScroll_clicked() {
 
 void TSS_project::on_leftRotation_clicked() {
     if (currentImage.isNull()) return;
+
+    if (isEditing == false) {
+        isEditing = true;
+    }
+        
+
     QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
 
     QImage dst(src.height(), src.width(), QImage::Format_ARGB32); // swap h and w
@@ -330,6 +423,7 @@ void TSS_project::on_leftRotation_clicked() {
 
     if (!dst.isNull()) {
         QImage img = dst;
+        currentImage = dst;
         scene->clear();
         item = scene->addPixmap(QPixmap::fromImage(img));
         item->setTransformationMode(Qt::SmoothTransformation);
@@ -340,6 +434,11 @@ void TSS_project::on_leftRotation_clicked() {
 
 void TSS_project::on_rightRotation_clicked() {
     if (currentImage.isNull()) return;
+
+    if (isEditing == false) {
+        isEditing = true;
+    }
+
     QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
 
     QImage dst(src.height(), src.width(), QImage::Format_ARGB32); // swap h and w
@@ -363,6 +462,7 @@ void TSS_project::on_rightRotation_clicked() {
 
     if (!dst.isNull()) {
         QImage img = dst;
+        currentImage = dst;
         scene->clear();
         item = scene->addPixmap(QPixmap::fromImage(img));
         item->setTransformationMode(Qt::SmoothTransformation);
