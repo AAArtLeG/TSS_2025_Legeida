@@ -21,8 +21,10 @@ private:
     QGraphicsScene* scene = nullptr;
     QGraphicsPixmapItem* item = nullptr;
     QImage currentImage;
+    QImage currentImageOrigin;
     QString currentImgPath;
 	QString currentImgName;
+    QString actualDirPath;
 
     std::vector<int> currentPage;
     int numOfImgs = 1;
@@ -38,6 +40,7 @@ private:
     void showPage();
     void showImg(const QString imgPath, const QString imgName);
     bool saveCurrentImage();
+    bool saveCurrentImageAs();
 private slots:
     //fileDialogFunctions
     void on_actionOpen_triggered();

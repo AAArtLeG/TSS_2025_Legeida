@@ -82,6 +82,28 @@ bool TSS_project::saveCurrentImage() {
     return true;
 }
 
+bool TSS_project::saveCurrentImageAs() {
+    if (currentImage.isNull()) return false;
+
+    if (currentImgPath.isEmpty())
+        return false;
+
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
+    if (fileName.isEmpty()) return false;
+
+    if (QFileInfo(fileName).suffix().isEmpty())
+        fileName += ".jpeg";
+
+    const bool ok = currentImage.save(fileName);
+
+    if (!ok) {
+        QMessageBox::warning(this, tr("Save failed"), tr("Could not save image."));
+        return false;
+    }
+    isEditing = false;
+    return true;
+}
+
 void TSS_project::checkNumOfImg() {
     if (ui->comboSelectNumOfImgs->currentIndex() == 0)
         numOfImgs = 1;
@@ -275,6 +297,8 @@ void TSS_project::on_actionOpen_folder_triggered() {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Select Folder"));
     if (dir.isEmpty()) return;
 
+    actualDirPath = dir;
+
     isFolderOpenned = true;
     scanFolderOnce(dir);
 
@@ -319,19 +343,22 @@ void TSS_project::on_buttonLeftScroll_clicked() {
             box.exec();
 
             if (box.clickedButton() == btnSave) {
-                if (saveCurrentImage())
-                    return;
-                else
+                if (!saveCurrentImage())
                     std::cout << "Error during saving";
+
             }
             else if (box.clickedButton() == btnSaveAs) {
-                
+                if (!saveCurrentImageAs())
+                    std::cout << "Error during saving";
+
+                scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
-                
+                currentImage = currentImageOrigin;
+                isEditing = false;
             }
             else {
-                
+                return;
             }
         }
 
@@ -364,19 +391,22 @@ void TSS_project::on_buttonRightScroll_clicked() {
             box.exec();
 
             if (box.clickedButton() == btnSave) {
-                if (saveCurrentImage())
-                    return;
-                else
+                if (!saveCurrentImage())
                     std::cout << "Error during saving";
+                    
             }
             else if (box.clickedButton() == btnSaveAs) {
+                if (!saveCurrentImageAs())
+                    std::cout << "Error during saving";
 
+                scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
-
+                currentImage = currentImageOrigin;
+                isEditing = false;
             }
             else {
-
+                return;
             }
         }
 
@@ -396,6 +426,7 @@ void TSS_project::on_leftRotation_clicked() {
 
     if (isEditing == false) {
         isEditing = true;
+        currentImageOrigin = currentImage;
     }
         
 
@@ -437,6 +468,7 @@ void TSS_project::on_rightRotation_clicked() {
 
     if (isEditing == false) {
         isEditing = true;
+        currentImageOrigin = currentImage;
     }
 
     QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
