@@ -11,6 +11,10 @@ void DataStorage::setImgPath(QString path) {
 	this->imgPath = path;
 };
 
+void DataStorage::setDateCreated(QDateTime date) {
+	this->dateCreated = date;
+};
+
 const QString& DataStorage::getImgName() const {
 	return imgName;
 };
@@ -18,3 +22,7 @@ const QString& DataStorage::getImgName() const {
 const QString& DataStorage::getImgPath() const {
 	return imgPath;
 };
+
+const QDateTime& DataStorage::getDateCreated() const {
+	return dateCreated;
+}

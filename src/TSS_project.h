@@ -39,6 +39,7 @@ private:
     void scanFolderOnce(const QString& dirPath);
     void showPage();
     void showImg(const QString imgPath, const QString imgName);
+    void sortByDate();
     bool saveCurrentImage();
     bool saveCurrentImageAs();
 private slots:
@@ -47,6 +48,7 @@ private slots:
     void on_actionSaveAs_triggered();
     void on_actionOpen_folder_triggered();
     void on_comboSelectNumOfImgs_currentIndexChanged();
+    void on_comboSelectFilter_currentIndexChanged();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_leftRotation_clicked();

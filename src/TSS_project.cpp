@@ -154,6 +154,7 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
         DataStorage i;
         i.setImgName(fi.fileName());
         i.setImgPath(fi.absoluteFilePath());
+        i.setDateCreated(fi.birthTime());
 
         dataBase->push_back(i);
     }

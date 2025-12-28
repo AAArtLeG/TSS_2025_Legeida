@@ -4,8 +4,8 @@
 #include <QPixmap>
 #include <QString>
 #include <QVector>
-
-
+#include <QDateTime>
+#include <QFileInfo>
 
 class DataStorage
 {
@@ -15,9 +15,12 @@ public:
 
 	const QString& getImgName() const;
 	const QString& getImgPath() const;
+	const QDateTime& getDateCreated() const;
 	void setImgName(QString name);
 	void setImgPath(QString path);
+	void setDateCreated(QDateTime date);
 private:
 	QString imgPath;
 	QString imgName;
+	QDateTime dateCreated; 	
 };

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1011</width>
+    <width>1073</width>
     <height>671</height>
    </rect>
   </property>
@@ -53,7 +53,7 @@
    <widget class="QComboBox" name="comboSelectNumOfImgs">
     <property name="geometry">
      <rect>
-      <x>300</x>
+      <x>380</x>
       <y>570</y>
       <width>80</width>
       <height>24</height>
@@ -113,13 +113,33 @@
      </item>
     </layout>
    </widget>
+   <widget class="QComboBox" name="comboBoxFilter">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>570</y>
+      <width>141</width>
+      <height>24</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>No Filter</string>
+     </property>
+    </item>
+    <item>
+     <property name="text">
+      <string>Date Created</string>
+     </property>
+    </item>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1011</width>
+     <width>1073</width>
      <height>33</height>
     </rect>
    </property>
