@@ -250,6 +250,10 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
 
 }
 
+void on_comboBoxTSS_project::Rating_currentIndexChanged() {
+
+}
+
 void TSS_project::on_comboBoxFilter_currentIndexChanged() {
     if (isFolderOpenned) {
         if (ui->comboBoxFilter->currentIndex() == 0) {

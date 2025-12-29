@@ -15,6 +15,10 @@ void DataStorage::setDateCreated(QDateTime date) {
 	this->dateCreated = date;
 };
 
+void DataStorage::setRating(int r) {
+    this->rating = r;
+};
+
 const QString& DataStorage::getImgName() const {
 	return imgName;
 };
@@ -25,6 +29,10 @@ const QString& DataStorage::getImgPath() const {
 
 const QDateTime& DataStorage::getDateCreated() const {
 	return dateCreated;
+}
+
+const int& DataStorage::getRating() const {
+    return rating;
 }
 
 QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase) {
@@ -64,7 +72,7 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
         i.setImgName(fi.fileName());
         i.setImgPath(fi.absoluteFilePath());
         i.setDateCreated(fi.birthTime());
-
+        i.rating = 1;
         dataBase.push_back(i);
     }
 
