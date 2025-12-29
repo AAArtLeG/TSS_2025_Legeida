@@ -73,56 +73,55 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
     return originDB;
 }
 
-//QVector<DataStorage>* DataStorage::mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R) {
-//    int i = 0;
-//    int j = 0;
-//    QVector<DataStorage>* result = new QVector<DataStorage>();
-//
-//    while (i < L->size() && j < R->size()) {
-//        if ((*L)[i].getDateCreated() <= (*R)[j].getDateCreated()) {
-//            result->push_back((*L)[i]);
-//            i++;
-//        }
-//        else {
-//            result->push_back((*R)[j]);
-//            j++;
-//        }
-//    }
-//
-//    while (i < L->size()) {
-//        result->push_back((*L)[i]);
-//        i++;
-//    }
-//
-//    while (j < R->size()) {
-//        result->push_back((*R)[j]);
-//        j++;
-//    }
-//
-//    return result;
-//}
-//
-//QVector<DataStorage>* DataStorage::mergeSort(QVector<DataStorage>& dataBase) {
-//    if (dataBase->size() <= 1)
-//        return;
-//
-//    int mid = dataBase->size() / 2;
-//
-//    QVector<DataStorage>* L = new QVector<DataStorage>();
-//    for (int i = 0; i < mid; i++) {
-//        (*L)[i] = (*dataBase)[0];
-//    }
-//
-//    QVector<DataStorage>* R = new QVector<DataStorage>();
-//    for (int i = 0; i < (dataBase->size() - mid); i++) {
-//        (*R)[i] = (*dataBase)[i+mid];
-//    }
-//
-//    L = mergeSort(L);
-//    R = mergeSort(R);
-//
-//    delete L;
-//    delete R;
-//
-//    return mergeByDates(L, R);
-//}
+QVector<DataStorage> DataStorage::mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R) {
+    int i = 0;
+    int j = 0;
+    QVector<DataStorage> result;
+
+    while (i < L.size() && j < R.size()) {
+        if (L[i].getDateCreated() <= R[j].getDateCreated()) {
+            result.push_back(L[i]);
+            i++;
+        }
+        else {
+            result.push_back(R[j]);
+            j++;
+        }
+    }
+
+    while (i < L.size()) {
+        result.push_back(L[i]);
+        i++;
+    }
+
+    while (j < R.size()) {
+        result.push_back(R[j]);
+        j++;
+    }
+
+    return result;
+}
+
+QVector<DataStorage> DataStorage::mergeSort(QVector<DataStorage>& dataBase) {
+    if (dataBase.size() <= 1)
+        return dataBase;
+
+    int mid = dataBase.size() / 2;
+
+    QVector<DataStorage> L;
+    L.reserve(mid);
+    for (int i = 0; i < mid; i++) {
+        L.push_back(dataBase[i]);
+    }
+
+    QVector<DataStorage> R;
+    R.reserve(dataBase.size() - mid);
+    for (int i = 0; i < (dataBase.size() - mid); i++) {
+        R.push_back(dataBase[i+mid]);
+    }
+
+    L = mergeSort(L);
+    R = mergeSort(R);
+
+    return mergeByDates(L, R);
+}

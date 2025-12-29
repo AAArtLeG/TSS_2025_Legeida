@@ -268,18 +268,25 @@ void TSS_project::sortByDate() {
 
 void TSS_project::on_comboBoxFilter_currentIndexChanged() {
     if (isFolderOpenned) {
-        for (int i = 0; i < 30; ++i)
+        //TESTS
+        /*for (int i = 0; i < 30; ++i)
             std::cout << i << " "
             << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
-            << "\n";
+            << "\n";*/
     
 
-        sortByDate();
+        //sortByDate();
+        dataBase = DataStorage::mergeSort(dataBase);
 
-        for (int i = 0; i < 30; ++i)
+        //TESTS
+        /*for (int i = 0; i < 30; ++i)
             std::cout << i << " "
             << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
             << "\n";
+
+        std::cout << dataBase.size() - 1 << " "
+            << dataBase[dataBase.size() - 1].getImgName().toStdString()
+            << "\n";*/
 
         showPage();
     }

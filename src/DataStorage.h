@@ -22,8 +22,8 @@ public:
 	void setDateCreated(QDateTime date);
 
 	static QVector<DataStorage> scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase);
-	static QVector<DataStorage>* mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R);
-	static QVector<DataStorage>* mergeSort(QVector<DataStorage>& dataBase);
+	static QVector<DataStorage> mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R);
+	static QVector<DataStorage> mergeSort(QVector<DataStorage>& dataBase);
 private:
 	QString imgPath;
 	QString imgName;

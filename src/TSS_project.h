@@ -39,7 +39,6 @@ private:
     void checkNumOfImg();
     void showPage();
     void showImg(const QString imgPath, const QString imgName);
-    void sortByDate();
     bool saveCurrentImage();
     bool saveCurrentImageAs();
 private slots:
