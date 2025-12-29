@@ -6,6 +6,7 @@
 #include <QVector>
 #include <QDateTime>
 #include <QFileInfo>
+#include <QDirIterator>
 
 class DataStorage
 {
@@ -19,6 +20,8 @@ public:
 	void setImgName(QString name);
 	void setImgPath(QString path);
 	void setDateCreated(QDateTime date);
+
+	static QVector<DataStorage> scanFolder(const QString& dirPath, QVector<DataStorage>* dataBase);
 private:
 	QString imgPath;
 	QString imgName;

@@ -118,50 +118,6 @@ void TSS_project::checkNumOfImg() {
         numOfImgs = 8;
 }
 
-void TSS_project::scanFolderOnce(const QString& dirPath) {
-    Q_ASSERT(dataBase);
-    dataBase->clear();
-
-    // for one directory
-    /*QDir d(dirPath);
-    d.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-    d.setNameFilters({ "*.png","*.jpg","*.jpeg","*.bmp","*.gif","*.tif","*.tiff","*.webp" });
-    d.setSorting(QDir::Name | QDir::IgnoreCase);
-
-    const QFileInfoList infos = d.entryInfoList();
-    dataBase->reserve(infos.size());
-
-    for (const QFileInfo& fi : infos) { //fi metadata from photos
-        DataStorage i;
-        i.setImgName(fi.fileName());
-        i.setImgPath(fi.absoluteFilePath());
-
-        dataBase->push_back(i);
-    }
-    */
-
-    QDirIterator it(
-        dirPath, // root folder
-        { "*.png","*.jpg","*.jpeg","*.bmp","*.gif","*.tif","*.tiff","*.webp"},
-        QDir::Files | QDir::NoDotAndDotDot,
-        QDirIterator::Subdirectories              
-    );
-
-    while (it.hasNext()) {
-        const QString path = it.next();
-        const QFileInfo fi(path);
-
-        DataStorage i;
-        i.setImgName(fi.fileName());
-        i.setImgPath(fi.absoluteFilePath());
-        i.setDateCreated(fi.birthTime());
-
-        dataBase->push_back(i);
-    }
-
-    originDataBase = *dataBase;
-}
-
 void TSS_project::showImg(const QString imgPath, const QString imgName) {
     QImage img(imgPath);
     if (!img.isNull()) {
@@ -338,7 +294,8 @@ void TSS_project::on_actionOpen_folder_triggered() {
     actualDirPath = dir;
 
     isFolderOpenned = true;
-    scanFolderOnce(dir);
+    originDataBase = DataStorage::scanFolder(dir, dataBase);
+    //scanFolderOnce(dir);
 
     checkNumOfImg();
     currentPage.resize(numOfImgs);
@@ -388,8 +345,9 @@ void TSS_project::on_buttonLeftScroll_clicked() {
             else if (box.clickedButton() == btnSaveAs) {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
-
-                scanFolderOnce(actualDirPath);
+                    
+                DataStorage::scanFolder(actualDirPath, dataBase);
+                //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
                 currentImage = currentImageOrigin;
@@ -437,7 +395,8 @@ void TSS_project::on_buttonRightScroll_clicked() {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
 
-                scanFolderOnce(actualDirPath);
+                DataStorage::scanFolder(actualDirPath, dataBase);
+                //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
                 currentImage = currentImageOrigin;

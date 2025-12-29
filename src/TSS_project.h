@@ -37,7 +37,6 @@ private:
     QVector<DataStorage> originDataBase;
 
     void checkNumOfImg();
-    void scanFolderOnce(const QString& dirPath);
     void showPage();
     void showImg(const QString imgPath, const QString imgName);
     void sortByDate();
