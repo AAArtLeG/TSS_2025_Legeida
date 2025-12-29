@@ -158,6 +158,8 @@ void TSS_project::scanFolderOnce(const QString& dirPath) {
 
         dataBase->push_back(i);
     }
+
+    originDataBase = *dataBase;
 }
 
 void TSS_project::showImg(const QString imgPath, const QString imgName) {
@@ -288,6 +290,41 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
             currentPage[i] = i + currentFirstIndex;
             //std::cout << "currentPage idx: " << i << "currentPage[idx] val: " << std::endl;
         }
+
+        showPage();
+    }
+
+}
+
+void TSS_project::sortByDate() {
+    const int n = dataBase->size();
+
+    for (int pass = 0; pass < n - 1; ++pass) {
+        bool swapped = false;
+        for (int j = 0; j < n - 1 - pass; ++j) {
+            if ((*dataBase)[j].getDateCreated() > (*dataBase)[j+1].getDateCreated()) {
+                std::swap((*dataBase)[j], (*dataBase)[j+1]); 
+                swapped = true;
+            }
+        }
+        if (!swapped) break; 
+    }
+}
+
+void TSS_project::on_comboBoxFilter_currentIndexChanged() {
+    if (isFolderOpenned) {
+        for (int i = 0; i < 30; ++i)
+            std::cout << i << " "
+            << (*dataBase)[i].getDateCreated().toString(Qt::ISODate).toStdString()
+            << "\n";
+    
+
+        sortByDate();
+
+        for (int i = 0; i < 30; ++i)
+            std::cout << i << " "
+            << (*dataBase)[i].getDateCreated().toString(Qt::ISODate).toStdString()
+            << "\n";
 
         showPage();
     }
