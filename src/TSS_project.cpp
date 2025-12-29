@@ -250,44 +250,32 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
 
 }
 
-void TSS_project::sortByDate() {
-    const int n = dataBase.size();
-
-    for (int pass = 0; pass < n - 1; ++pass) {
-        bool swapped = false;
-        for (int j = 0; j < n - 1 - pass; ++j) {
-            if (dataBase[j].getDateCreated() > dataBase[j+1].getDateCreated()) {
-                std::swap(dataBase[j], dataBase[j+1]); 
-                swapped = true;
-            }
-        }
-        if (!swapped) break; 
-    }
-}
-
-
 void TSS_project::on_comboBoxFilter_currentIndexChanged() {
     if (isFolderOpenned) {
-        //TESTS
-        /*for (int i = 0; i < 30; ++i)
+        if (ui->comboBoxFilter->currentIndex() == 0) {
+            DataStorage::scanFolder(actualDirPath, dataBase);
+        }
+
+        if (ui->comboBoxFilter->currentIndex() == 1) {
+            //TESTS
+            /*for (int i = 0; i < 30; ++i)
             std::cout << i << " "
             << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
             << "\n";*/
-    
 
-        //sortByDate();
-        dataBase = DataStorage::mergeSort(dataBase);
+            dataBase = DataStorage::mergeSort(dataBase);
 
-        //TESTS
-        /*for (int i = 0; i < 30; ++i)
-            std::cout << i << " "
-            << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
-            << "\n";
+            //TESTS
+            /*for (int i = 0; i < 30; ++i)
+                std::cout << i << " "
+                << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
+                << "\n";
 
-        std::cout << dataBase.size() - 1 << " "
-            << dataBase[dataBase.size() - 1].getImgName().toStdString()
-            << "\n";*/
+            std::cout << dataBase.size() - 1 << " "
+                << dataBase[dataBase.size() - 1].getImgName().toStdString()
+                << "\n";*/
 
+        }
         showPage();
     }
 
@@ -302,6 +290,10 @@ void TSS_project::on_actionOpen_folder_triggered() {
     isFolderOpenned = true;
     originDataBase = DataStorage::scanFolder(dir, dataBase);
     //scanFolderOnce(dir);
+
+    if (ui->comboBoxFilter->currentIndex() == 1) {
+        dataBase = DataStorage::mergeSort(dataBase);
+    }
 
     checkNumOfImg();
     currentPage.resize(numOfImgs);
