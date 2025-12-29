@@ -22,13 +22,11 @@ TSS_project::TSS_project(QWidget *parent)
 
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
-    dataBase = new QVector<DataStorage>;
     currentPage.resize(numOfImgs);
 }
 
 TSS_project::~TSS_project()
 {
-    delete dataBase;
 }
 
 void TSS_project::on_actionOpen_triggered()
@@ -136,7 +134,7 @@ void TSS_project::showImg(const QString imgPath, const QString imgName) {
 void TSS_project::showPage() {
     scene->clear();
     if (numOfImgs == 1) {
-        const QString& path = dataBase->at(currentPage[0]).getImgPath();
+        const QString& path = dataBase[currentPage[0]].getImgPath();
         QImage img(path);
         if (!img.isNull()) {
             scene->clear();
@@ -194,8 +192,8 @@ void TSS_project::showPage() {
         const int cellX = margin + c * (thumbW + wGap);
         const int cellY = margin + r * (thumbH + 36 + hGap); // +36 for img name
 
-        const QString path = dataBase->at(currentPage[i]).getImgPath();
-        const QString name = dataBase->at(currentPage[i]).getImgName();
+        const QString path = dataBase[currentPage[i]].getImgPath();
+        const QString name = dataBase[currentPage[i]].getImgName();
         QImageReader reader(path);
 
         QSize target(thumbW, thumbH);
@@ -226,7 +224,7 @@ void TSS_project::showPage() {
                 });
             });
 
-        auto* label = scene->addSimpleText(dataBase->at(currentPage[i]).getImgName(), labelFont);
+        auto* label = scene->addSimpleText(dataBase[currentPage[i]].getImgName(), labelFont);
         label->setBrush(QColor(60, 60, 60));
         label->setPos(cellX, cellY + thumbH + 6);
 
@@ -253,13 +251,13 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
 }
 
 void TSS_project::sortByDate() {
-    const int n = dataBase->size();
+    const int n = dataBase.size();
 
     for (int pass = 0; pass < n - 1; ++pass) {
         bool swapped = false;
         for (int j = 0; j < n - 1 - pass; ++j) {
-            if ((*dataBase)[j].getDateCreated() > (*dataBase)[j+1].getDateCreated()) {
-                std::swap((*dataBase)[j], (*dataBase)[j+1]); 
+            if (dataBase[j].getDateCreated() > dataBase[j+1].getDateCreated()) {
+                std::swap(dataBase[j], dataBase[j+1]); 
                 swapped = true;
             }
         }
@@ -267,11 +265,12 @@ void TSS_project::sortByDate() {
     }
 }
 
+
 void TSS_project::on_comboBoxFilter_currentIndexChanged() {
     if (isFolderOpenned) {
         for (int i = 0; i < 30; ++i)
             std::cout << i << " "
-            << (*dataBase)[i].getDateCreated().toString(Qt::ISODate).toStdString()
+            << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
             << "\n";
     
 
@@ -279,7 +278,7 @@ void TSS_project::on_comboBoxFilter_currentIndexChanged() {
 
         for (int i = 0; i < 30; ++i)
             std::cout << i << " "
-            << (*dataBase)[i].getDateCreated().toString(Qt::ISODate).toStdString()
+            << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
             << "\n";
 
         showPage();
@@ -407,7 +406,7 @@ void TSS_project::on_buttonRightScroll_clicked() {
             }
         }
 
-        if (currentPage[numOfImgs - 1] + numOfImgs > dataBase->size() - 1)
+        if (currentPage[numOfImgs - 1] + numOfImgs > dataBase.size() - 1)
             return;
 
         std::cout << "after return" << std::endl;

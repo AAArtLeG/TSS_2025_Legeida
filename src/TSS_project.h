@@ -33,7 +33,7 @@ private:
     //int prevNumOfImgs = 1;
     
 
-    QVector<DataStorage>* dataBase = nullptr;
+    QVector<DataStorage> dataBase;
     QVector<DataStorage> originDataBase;
 
     void checkNumOfImg();

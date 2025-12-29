@@ -27,10 +27,10 @@ const QDateTime& DataStorage::getDateCreated() const {
 	return dateCreated;
 }
 
-QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<DataStorage>* dataBase) {
-    Q_ASSERT(dataBase);
-    dataBase->clear();
+QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase) {
+    dataBase.clear();
     QVector<DataStorage> originDB;
+
     // for one directory
     /*QDir d(dirPath);
     d.setFilter(QDir::Files | QDir::NoDotAndDotDot);
@@ -65,11 +65,64 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
         i.setImgPath(fi.absoluteFilePath());
         i.setDateCreated(fi.birthTime());
 
-        dataBase->push_back(i);
+        dataBase.push_back(i);
     }
 
-    originDB = *dataBase;
-        
-
+    originDB = dataBase;
+       
     return originDB;
 }
+
+//QVector<DataStorage>* DataStorage::mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R) {
+//    int i = 0;
+//    int j = 0;
+//    QVector<DataStorage>* result = new QVector<DataStorage>();
+//
+//    while (i < L->size() && j < R->size()) {
+//        if ((*L)[i].getDateCreated() <= (*R)[j].getDateCreated()) {
+//            result->push_back((*L)[i]);
+//            i++;
+//        }
+//        else {
+//            result->push_back((*R)[j]);
+//            j++;
+//        }
+//    }
+//
+//    while (i < L->size()) {
+//        result->push_back((*L)[i]);
+//        i++;
+//    }
+//
+//    while (j < R->size()) {
+//        result->push_back((*R)[j]);
+//        j++;
+//    }
+//
+//    return result;
+//}
+//
+//QVector<DataStorage>* DataStorage::mergeSort(QVector<DataStorage>& dataBase) {
+//    if (dataBase->size() <= 1)
+//        return;
+//
+//    int mid = dataBase->size() / 2;
+//
+//    QVector<DataStorage>* L = new QVector<DataStorage>();
+//    for (int i = 0; i < mid; i++) {
+//        (*L)[i] = (*dataBase)[0];
+//    }
+//
+//    QVector<DataStorage>* R = new QVector<DataStorage>();
+//    for (int i = 0; i < (dataBase->size() - mid); i++) {
+//        (*R)[i] = (*dataBase)[i+mid];
+//    }
+//
+//    L = mergeSort(L);
+//    R = mergeSort(R);
+//
+//    delete L;
+//    delete R;
+//
+//    return mergeByDates(L, R);
+//}
