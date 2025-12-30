@@ -250,7 +250,20 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
 
 }
 
-void on_comboBoxTSS_project::Rating_currentIndexChanged() {
+void TSS_project::on_comboBoxRating_currentIndexChanged(){
+    if (currentImage.isNull()) return;
+
+    if (ui->comboBoxRating->currentIndex() == 0){}
+        
+
+    if (ui->comboBoxRating->currentIndex() == 1){}
+        
+
+    if (ui->comboBoxRating->currentIndex() == 2){}
+        
+
+    if (ui->comboBoxRating->currentIndex() == 3){}
+        
 
 }
 
