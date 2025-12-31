@@ -43,7 +43,7 @@ const QString& DataStorage::getTag() const {
     return tag;
 }
 
-QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase) {
+QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase, MetaDataStorage& metaData) {
     dataBase.clear();
     QVector<DataStorage> originDB;
 
@@ -81,6 +81,12 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
         i.setImgPath(fi.absoluteFilePath());
         i.setDateCreated(fi.birthTime());
         //i.rating = 1;
+
+        const QString absPath = fi.absoluteFilePath();
+        PhotoMeta m = metaData.getFromRecords(absPath);
+        i.setRating(m.rating);
+        i.setTag(m.tag);
+
         dataBase.push_back(i);
     }
 
@@ -140,27 +146,4 @@ QVector<DataStorage> DataStorage::mergeSort(QVector<DataStorage>& dataBase) {
     R = mergeSort(R);
 
     return mergeByDates(L, R);
-}
-
-QByteArray DataStorage::quickFingerprint(const QString& absPath) {
-    QFile f(absPath);
-    if (!f.open(QIODevice::ReadOnly)) return {};
-
-    QCryptographicHash h(QCryptographicHash::Sha1);
-
-    const qint64 size = f.size();
-    h.addData(reinterpret_cast<const char*>(&size), sizeof(size));
-
-    const qint64 chunk = 64 * 1024;
-
-    QByteArray first = f.read(chunk);
-    h.addData(first);
-
-    if (size > 2 * chunk) {
-        f.seek(size - chunk);
-        QByteArray last = f.read(chunk);
-        h.addData(last);
-    }
-
-    return h.result(); 
 }

@@ -13,13 +13,19 @@ struct PhotoMeta {
 class MetaDataStorage
 {
 public:
+    PhotoMeta getFromRecords(const QString& absPath);
+    QString getMetaStoragePath();
 
+    void setInRecords(const QString& absPath, int rating, const QString& tag);
+
+    bool save();
+    bool load();
 private:
     static QByteArray quickFingerprint(const QString& absPath);
 
-    QString filePath() const;
+    QString pathToJSON();
 
-    QHash<QString, PhotoMeta> byPath;
+    QHash<QString, PhotoMeta> pathToMeta;
     QMultiHash<QByteArray, QString> fpToPath;
 };
 

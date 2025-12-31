@@ -24,6 +24,7 @@ private:
     QImage currentImageOrigin;
     QString currentImgPath;
 	QString currentImgName;
+    int currentImgIdx;
     QString actualDirPath;
 
     std::vector<int> currentPage;
@@ -34,11 +35,12 @@ private:
     
 
     QVector<DataStorage> dataBase;
+    MetaDataStorage metaData;
     QVector<DataStorage> originDataBase;
 
     void checkNumOfImg();
     void showPage();
-    void showImg(const QString imgPath, const QString imgName);
+    void showImg(const QString& imgPath, const QString& imgName, const int& imgIdx);
     bool saveCurrentImage();
     bool saveCurrentImageAs();
 private slots:

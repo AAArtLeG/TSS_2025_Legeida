@@ -23,6 +23,9 @@ TSS_project::TSS_project(QWidget *parent)
     scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     currentPage.resize(numOfImgs);
+
+    metaData.load();
+    std::cout << "Meta JSON path:" << metaData.getMetaStoragePath().toStdString();
 }
 
 TSS_project::~TSS_project()
@@ -116,18 +119,20 @@ void TSS_project::checkNumOfImg() {
         numOfImgs = 8;
 }
 
-void TSS_project::showImg(const QString imgPath, const QString imgName) {
+void TSS_project::showImg(const QString& imgPath, const QString& imgName, const int& imgIdx) {
     QImage img(imgPath);
     if (!img.isNull()) {
         currentImage = img;
         currentImgPath = imgPath;
-        currentImgName = imgName;
+        currentImgIdx = imgIdx;
 
         scene->clear();
         item = scene->addPixmap(QPixmap::fromImage(img));
         item->setTransformationMode(Qt::SmoothTransformation);
         scene->setSceneRect(item->boundingRect());
         ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+
+        ui->comboBoxRating->setCurrentIndex(dataBase[currentImgIdx].getRating());
     }
 }
 
@@ -194,6 +199,7 @@ void TSS_project::showPage() {
 
         const QString path = dataBase[currentPage[i]].getImgPath();
         const QString name = dataBase[currentPage[i]].getImgName();
+        const int idx = currentPage[i];
         QImageReader reader(path);
 
         QSize target(thumbW, thumbH);
@@ -218,9 +224,9 @@ void TSS_project::showPage() {
         pix->setData(Qt::UserRole + 1, name);
 
         connect(pix,  &ClickableImgs::doubleClicked, this, // связываю дабл клик и ловлю по какой конкретно картинке он был
-            [this, path, name](QGraphicsPixmapItem* p) {
-                QTimer::singleShot(0, this, [this, path, name] {
-                    showImg(path, name);   // call func showImg AFTER prev reading imgPath
+            [this, path, name, idx](QGraphicsPixmapItem* p) {
+                QTimer::singleShot(0, this, [this, path, name, idx] {
+                    showImg(path, name, idx);   // call func showImg AFTER prev reading imgPath
                 });
             });
 
@@ -253,16 +259,44 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
 void TSS_project::on_comboBoxRating_currentIndexChanged(){
     if (currentImage.isNull()) return;
 
-    if (ui->comboBoxRating->currentIndex() == 0){}
+    if (ui->comboBoxRating->currentIndex() == 0){
+        dataBase[currentImgIdx].setRating(0);
+        metaData.setInRecords(currentImgPath, 0, dataBase[currentImgIdx].getTag());
+        metaData.save();
+    }
         
 
-    if (ui->comboBoxRating->currentIndex() == 1){}
+    if (ui->comboBoxRating->currentIndex() == 1){
+        dataBase[currentImgIdx].setRating(1);
+        metaData.setInRecords(currentImgPath, 1, dataBase[currentImgIdx].getTag());
+        metaData.save();
+    }
         
 
-    if (ui->comboBoxRating->currentIndex() == 2){}
+    if (ui->comboBoxRating->currentIndex() == 2){
+        dataBase[currentImgIdx].setRating(2);
+        metaData.setInRecords(currentImgPath, 2, dataBase[currentImgIdx].getTag());
+        metaData.save();
+    }
         
 
-    if (ui->comboBoxRating->currentIndex() == 3){}
+    if (ui->comboBoxRating->currentIndex() == 3){
+        dataBase[currentImgIdx].setRating(3);
+        metaData.setInRecords(currentImgPath, 3, dataBase[currentImgIdx].getTag());
+        metaData.save();
+    }
+
+    if (ui->comboBoxRating->currentIndex() == 4) {
+        dataBase[currentImgIdx].setRating(4);
+        metaData.setInRecords(currentImgPath, 4, dataBase[currentImgIdx].getTag());
+        metaData.save();
+    }
+
+    if (ui->comboBoxRating->currentIndex() == 5) {
+        dataBase[currentImgIdx].setRating(5);
+        metaData.setInRecords(currentImgPath, 5, dataBase[currentImgIdx].getTag());
+        metaData.save();
+    }
         
 
 }
@@ -270,7 +304,7 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
 void TSS_project::on_comboBoxFilter_currentIndexChanged() {
     if (isFolderOpenned) {
         if (ui->comboBoxFilter->currentIndex() == 0) {
-            DataStorage::scanFolder(actualDirPath, dataBase);
+            DataStorage::scanFolder(actualDirPath, dataBase, metaData);
         }
 
         if (ui->comboBoxFilter->currentIndex() == 1) {
@@ -305,7 +339,7 @@ void TSS_project::on_actionOpen_folder_triggered() {
     actualDirPath = dir;
 
     isFolderOpenned = true;
-    originDataBase = DataStorage::scanFolder(dir, dataBase);
+    originDataBase = DataStorage::scanFolder(dir, dataBase, metaData);
     //scanFolderOnce(dir);
 
     if (ui->comboBoxFilter->currentIndex() == 1) {
@@ -361,7 +395,7 @@ void TSS_project::on_buttonLeftScroll_clicked() {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
                     
-                DataStorage::scanFolder(actualDirPath, dataBase);
+                DataStorage::scanFolder(actualDirPath, dataBase, metaData);
                 //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
@@ -410,7 +444,7 @@ void TSS_project::on_buttonRightScroll_clicked() {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
 
-                DataStorage::scanFolder(actualDirPath, dataBase);
+                DataStorage::scanFolder(actualDirPath, dataBase, metaData);
                 //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {

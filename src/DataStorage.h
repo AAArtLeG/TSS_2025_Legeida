@@ -4,6 +4,7 @@
 #include <QPixmap>
 #include <QString>
 #include <QVector>
+#include "MetaDataStorage.h"
 #include <QDateTime>
 #include <QFileInfo>
 #include <QDirIterator>
@@ -27,14 +28,13 @@ public:
 	void setRating(unsigned int r);
 	void setTag(QString t);
 
-	static QVector<DataStorage> scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase);
+	static QVector<DataStorage> scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase, MetaDataStorage& metaData);
 	static QVector<DataStorage> mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R);
 	static QVector<DataStorage> mergeSort(QVector<DataStorage>& dataBase);
-	static QByteArray quickFingerprint(const QString& absPath);
 private:
 	QString imgPath;
 	QString imgName;
 	QDateTime dateCreated; 	
-	unsigned int rating;
+	unsigned int rating = 0;
 	QString tag;
 };
