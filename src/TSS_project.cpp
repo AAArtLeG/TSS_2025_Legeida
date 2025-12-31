@@ -198,6 +198,18 @@ void TSS_project::showImg(const QString& imgPath, const QString& imgName, const 
         ui->comboBoxRating->blockSignals(true);
         ui->comboBoxRating->setCurrentIndex(dataBase[currentImgIdx].getRating());
         ui->comboBoxRating->blockSignals(false);
+
+        ui->comboBoxTag->blockSignals(true);
+        if (dataBase[currentImgIdx].getTag() == "") {
+            ui->comboBoxTag->setCurrentIndex(0);
+        }
+        if (dataBase[currentImgIdx].getTag() == "Animal") {
+            ui->comboBoxTag->setCurrentIndex(1);
+        }
+        if (dataBase[currentImgIdx].getTag() == "Landscape") {
+            ui->comboBoxTag->setCurrentIndex(2);
+        }
+        ui->comboBoxTag->blockSignals(false);
     }
 }
 
@@ -365,7 +377,33 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
         
     if (currentSortIdx == 2)
         dataBase = DataStorage::mergeSort(dataBase, "rating");
+}
 
+void TSS_project::on_comboBoxTag_currentIndexChanged() {
+    if (currentImage.isNull()) return;
+
+    QString tag = "";
+
+    if (ui->comboBoxTag->currentIndex() == 0) {
+        dataBase[currentImgIdx].setTag("");
+        metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
+        metaData.save();
+    }
+
+    if (ui->comboBoxTag->currentIndex() == 1) {
+        tag = "Animal";
+        dataBase[currentImgIdx].setTag("Animal");
+        metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
+        metaData.save();
+    }
+
+
+    if (ui->comboBoxTag->currentIndex() == 2) {
+        tag = "Landscape";
+        dataBase[currentImgIdx].setTag("Landscape");
+        metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
+        metaData.save();
+    }
 }
 
 void TSS_project::filterCurrentIndexChanged(int idx) {
