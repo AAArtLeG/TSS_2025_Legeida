@@ -132,7 +132,9 @@ void TSS_project::showImg(const QString& imgPath, const QString& imgName, const 
         scene->setSceneRect(item->boundingRect());
         ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 
+        ui->comboBoxRating->blockSignals(true);
         ui->comboBoxRating->setCurrentIndex(dataBase[currentImgIdx].getRating());
+        ui->comboBoxRating->blockSignals(false);
     }
 }
 

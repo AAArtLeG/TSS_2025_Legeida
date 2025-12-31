@@ -48,6 +48,7 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
  bool MetaDataStorage::load() {
 	pathToMeta.clear();
 	fpToPath.clear();
+    sizesWithMeta.clear();
 
 	QFile f(pathToJSON());
 
@@ -82,6 +83,8 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
         const QString fpB64 = o.value("fp").toString();
         meta.fp = QByteArray::fromBase64(fpB64.toLatin1());
 
+        meta.size = static_cast<quint64>(o.value("size").toVariant().toLongLong());
+
         pathToMeta.insert(absPath, meta);
 
         //POZOR
@@ -90,6 +93,9 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
         // fingerprint -> path (if fp exist)
         if (!meta.fp.isEmpty())
             fpToPath.insert(meta.fp, absPath);
+
+        if (meta.size != 0)
+            sizesWithMeta.insert(meta.size);
     }
     
     return true;
@@ -107,6 +113,7 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
          o["rating"] = static_cast<int>(meta.rating);
          o["tag"] = meta.tag;
          o["fp"] = QString::fromLatin1(meta.fp.toBase64());
+         o["size"] = static_cast<qint64>(meta.size);
 
          root.insert(path, o);
 
@@ -120,18 +127,23 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
 
          // Compact — to minimaze size
          f.write(doc.toJson(QJsonDocument::Compact));
-
-         return true;
      }
+
+     return true;
  }
 
- PhotoMeta MetaDataStorage::getFromRecords(const QString& absPath) {
+ PhotoMeta MetaDataStorage::getFromRecords(const QString& absPath, quint64& fileSize) {
      const QString path = QDir::cleanPath(absPath);
 
      // search by absPath
      auto it = pathToMeta.find(path);
      if (it != pathToMeta.end()) // if find(path) return end() => iterator for key = path wasnt found
          return it.value();
+
+     // FOR TIME OPTIMIZATION 
+     // if no files in json with this size -> no file like this was saved
+     if (!sizesWithMeta.contains(fileSize))
+         return {};
 
      // try to recover rating and tag, if file was removes/renamed
      const QByteArray fp = quickFingerprint(path);
@@ -152,8 +164,11 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
      fpToPath.remove(fp, oldPath);
 
      meta.fp = fp;
+     meta.size = fileSize;
+
      pathToMeta.insert(path, meta);
      fpToPath.insert(fp, path);
+     sizesWithMeta.insert(meta.size);
 
      return meta;
  }
@@ -180,8 +195,11 @@ QByteArray MetaDataStorage::quickFingerprint(const QString& absPath) {
      meta.rating = rating;
      meta.tag = tag;
      meta.fp = quickFingerprint(path);
+     meta.size = static_cast<quint64>(QFileInfo(path).size());
 
      pathToMeta.insert(path, meta); 
+
+     sizesWithMeta.insert(meta.size);
 
      if (!meta.fp.isEmpty())
          fpToPath.insert(meta.fp, path);

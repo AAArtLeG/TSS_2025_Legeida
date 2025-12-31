@@ -83,7 +83,8 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
         //i.rating = 1;
 
         const QString absPath = fi.absoluteFilePath();
-        PhotoMeta m = metaData.getFromRecords(absPath);
+        quint64 size = static_cast<quint64>(fi.size());
+        PhotoMeta m = metaData.getFromRecords(absPath, size);
         i.setRating(m.rating);
         i.setTag(m.tag);
 
