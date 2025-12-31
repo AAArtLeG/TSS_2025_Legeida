@@ -24,12 +24,75 @@ TSS_project::TSS_project(QWidget *parent)
     ui->graphicsView->setScene(scene);
     currentPage.resize(numOfImgs);
 
+    setupFilterMenu();
+
     metaData.load();
     std::cout << "Meta JSON path:" << metaData.getMetaStoragePath().toStdString();
 }
 
 TSS_project::~TSS_project()
 {
+}
+
+void TSS_project::setupFilterMenu() {
+    auto* menu = new QMenu(this);
+
+    auto* modeGroup = new QActionGroup(this);
+    modeGroup->setExclusive(true); // only one option from QActionGroup can be selected (checked)
+
+    QAction* actNoFilter = menu->addAction("No filter");
+    actNoFilter->setCheckable(true);
+    actNoFilter->setChecked(true);
+    ui->toolButtonFilter->setText("No filter");
+    modeGroup->addAction(actNoFilter);
+
+    QAction* actSortByDate = menu->addAction("Sort by date");
+    actSortByDate->setCheckable(true);
+    modeGroup->addAction(actSortByDate);
+
+    QAction* actSortByRating = menu->addAction("Sort by rating");
+    actSortByRating->setCheckable(true);
+    modeGroup->addAction(actSortByRating);
+
+    QMenu* tagSubMenu = menu->addMenu("Filter by tag");
+    QAction* actTagAll = tagSubMenu->addAction("All tags");
+
+    QAction* actTagAnimal = tagSubMenu->addAction("Animal");
+    QAction* actTagLandscape = tagSubMenu->addAction("Landscape");
+
+    ui->toolButtonFilter->setMenu(menu);
+    ui->toolButtonFilter->setPopupMode(QToolButton::InstantPopup);
+
+    //catching currentIndexChange from all options from action group
+    connect(actNoFilter, &QAction::triggered, this, [this] {
+        currentSortIdx = 0;
+        ui->toolButtonFilter->setText("No filter");
+        filterCurrentIndexChanged(0); // бывший индекс combobox
+        });
+
+    connect(actSortByDate, &QAction::triggered, this, [this] {
+        currentSortIdx = 1;
+        ui->toolButtonFilter->setText("Sort by date");
+        filterCurrentIndexChanged(1);
+        });
+
+    connect(actSortByRating, &QAction::triggered, this, [this] {
+        currentSortIdx = 2;
+        ui->toolButtonFilter->setText("Sort by rating");
+        filterCurrentIndexChanged(2);
+        });
+
+    connect(actTagAll, &QAction::triggered, this, [this] {
+        //filterCurrentIndexChanged("all"); 
+        });
+
+    connect(actTagAnimal, &QAction::triggered, this, [this] {
+        //filterCurrentIndexChanged("Animal");
+        });
+
+    connect(actTagLandscape, &QAction::triggered, this, [this] {
+        //filterCurrentIndexChanged("Landscape");
+        });
 }
 
 void TSS_project::on_actionOpen_triggered()
@@ -300,18 +363,17 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
         metaData.save();
     }
         
-    if (ui->comboBoxFilter->currentIndex() == 2)
+    if (currentSortIdx == 2)
         dataBase = DataStorage::mergeSort(dataBase, "rating");
 
 }
 
-void TSS_project::on_comboBoxFilter_currentIndexChanged() {
+void TSS_project::filterCurrentIndexChanged(int idx) {
     if (isFolderOpenned) {
-        if (ui->comboBoxFilter->currentIndex() == 0) {
+        if (idx == 0)
             DataStorage::scanFolder(actualDirPath, dataBase, metaData);
-        }
 
-        if (ui->comboBoxFilter->currentIndex() == 1) {
+        if (idx == 1) {
             //TESTS
             /*for (int i = 0; i < 30; ++i)
             std::cout << i << " "
@@ -332,29 +394,11 @@ void TSS_project::on_comboBoxFilter_currentIndexChanged() {
 
         }
 
-        if (ui->comboBoxFilter->currentIndex() == 2) {
-            //TESTS
-            /*for (int i = 0; i < 30; ++i)
-            std::cout << i << " "
-            << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
-            << "\n";*/
-
+        if (idx == 2)
             dataBase = DataStorage::mergeSort(dataBase, "rating");
-
-            //TESTS
-            /*for (int i = 0; i < 30; ++i)
-                std::cout << i << " "
-                << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
-                << "\n";
-
-            std::cout << dataBase.size() - 1 << " "
-                << dataBase[dataBase.size() - 1].getImgName().toStdString()
-                << "\n";*/
-
-        }
+        
         showPage();
     }
-
 }
 
 void TSS_project::on_actionOpen_folder_triggered() {
@@ -367,11 +411,11 @@ void TSS_project::on_actionOpen_folder_triggered() {
     originDataBase = DataStorage::scanFolder(dir, dataBase, metaData);
     //scanFolderOnce(dir);
 
-    if (ui->comboBoxFilter->currentIndex() == 1) {
+    if (currentSortIdx == 1) {
         dataBase = DataStorage::mergeSort(dataBase, "date");
     }
 
-    if (ui->comboBoxFilter->currentIndex() == 2) {
+    if (currentSortIdx == 2) {
         dataBase = DataStorage::mergeSort(dataBase, "rating");
     }
 

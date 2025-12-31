@@ -113,31 +113,6 @@
      </item>
     </layout>
    </widget>
-   <widget class="QComboBox" name="comboBoxFilter">
-    <property name="geometry">
-     <rect>
-      <x>190</x>
-      <y>570</y>
-      <width>141</width>
-      <height>24</height>
-     </rect>
-    </property>
-    <item>
-     <property name="text">
-      <string>No Filter</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Date Created</string>
-     </property>
-    </item>
-    <item>
-     <property name="text">
-      <string>Rating</string>
-     </property>
-    </item>
-   </widget>
    <widget class="QComboBox" name="comboBoxRating">
     <property name="geometry">
      <rect>
@@ -189,6 +164,19 @@
     </property>
     <property name="text">
      <string>Rating:</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="toolButtonFilter">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>571</y>
+      <width>171</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>...</string>
     </property>
    </widget>
   </widget>

@@ -31,6 +31,7 @@ private:
     int numOfImgs = 1;
     bool isFolderOpenned = false;
     bool isEditing = false;
+    int currentSortIdx = 0;
     //int prevNumOfImgs = 1;
     
 
@@ -43,6 +44,9 @@ private:
     void showImg(const QString& imgPath, const QString& imgName, const int& imgIdx);
     bool saveCurrentImage();
     bool saveCurrentImageAs();
+    void setupFilterMenu();
+    void filterCurrentIndexChanged(int idx);
+    void filterCurrentIndexChanged(QString tag);
 private slots:
     //fileDialogFunctions 
     void on_actionOpen_triggered();
@@ -50,7 +54,6 @@ private slots:
     void on_actionOpen_folder_triggered();
     void on_comboSelectNumOfImgs_currentIndexChanged();
     void on_comboBoxRating_currentIndexChanged();
-    void on_comboBoxFilter_currentIndexChanged();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_leftRotation_clicked();
