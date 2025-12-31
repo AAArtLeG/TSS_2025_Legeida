@@ -125,7 +125,36 @@ QVector<DataStorage> DataStorage::mergeByDates(QVector<DataStorage>& L, QVector<
     return result;
 }
 
-QVector<DataStorage> DataStorage::mergeSort(QVector<DataStorage>& dataBase) {
+QVector<DataStorage> DataStorage::mergeByRating(QVector<DataStorage>& L, QVector<DataStorage>& R) {
+    int i = 0;
+    int j = 0;
+    QVector<DataStorage> result;
+
+    while (i < L.size() && j < R.size()) {
+        if (L[i].getRating() >= R[j].getRating()) {
+            result.push_back(L[i]);
+            i++;
+        }
+        else {
+            result.push_back(R[j]);
+            j++;
+        }
+    }
+
+    while (i < L.size()) {
+        result.push_back(L[i]);
+        i++;
+    }
+
+    while (j < R.size()) {
+        result.push_back(R[j]);
+        j++;
+    }
+
+    return result;
+}
+
+QVector<DataStorage> DataStorage::mergeSort(QVector<DataStorage>& dataBase, QString typeOfFilter) {
     if (dataBase.size() <= 1)
         return dataBase;
 
@@ -143,8 +172,17 @@ QVector<DataStorage> DataStorage::mergeSort(QVector<DataStorage>& dataBase) {
         R.push_back(dataBase[i+mid]);
     }
 
-    L = mergeSort(L);
-    R = mergeSort(R);
+    if (typeOfFilter == "date") {
+        L = mergeSort(L, "date");
+        R = mergeSort(R, "date");
 
-    return mergeByDates(L, R);
+        return mergeByDates(L, R);
+    }
+
+    if (typeOfFilter == "rating") {
+        L = mergeSort(L, "rating");
+        R = mergeSort(R, "rating");
+
+        return mergeByRating(L, R);
+    }
 }

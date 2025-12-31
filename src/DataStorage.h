@@ -30,7 +30,8 @@ public:
 
 	static QVector<DataStorage> scanFolder(const QString& dirPath, QVector<DataStorage>& dataBase, MetaDataStorage& metaData);
 	static QVector<DataStorage> mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R);
-	static QVector<DataStorage> mergeSort(QVector<DataStorage>& dataBase);
+	static QVector<DataStorage> mergeByRating(QVector<DataStorage>& L, QVector<DataStorage>& R);
+	static QVector<DataStorage> mergeSort(QVector<DataStorage>& dataBase, QString typeOfFilter);
 private:
 	QString imgPath;
 	QString imgName;

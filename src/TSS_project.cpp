@@ -300,6 +300,8 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
         metaData.save();
     }
         
+    if (ui->comboBoxFilter->currentIndex() == 2)
+        dataBase = DataStorage::mergeSort(dataBase, "rating");
 
 }
 
@@ -316,7 +318,28 @@ void TSS_project::on_comboBoxFilter_currentIndexChanged() {
             << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
             << "\n";*/
 
-            dataBase = DataStorage::mergeSort(dataBase);
+            dataBase = DataStorage::mergeSort(dataBase, "date");
+
+            //TESTS
+            /*for (int i = 0; i < 30; ++i)
+                std::cout << i << " "
+                << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
+                << "\n";
+
+            std::cout << dataBase.size() - 1 << " "
+                << dataBase[dataBase.size() - 1].getImgName().toStdString()
+                << "\n";*/
+
+        }
+
+        if (ui->comboBoxFilter->currentIndex() == 2) {
+            //TESTS
+            /*for (int i = 0; i < 30; ++i)
+            std::cout << i << " "
+            << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
+            << "\n";*/
+
+            dataBase = DataStorage::mergeSort(dataBase, "rating");
 
             //TESTS
             /*for (int i = 0; i < 30; ++i)
@@ -345,7 +368,11 @@ void TSS_project::on_actionOpen_folder_triggered() {
     //scanFolderOnce(dir);
 
     if (ui->comboBoxFilter->currentIndex() == 1) {
-        dataBase = DataStorage::mergeSort(dataBase);
+        dataBase = DataStorage::mergeSort(dataBase, "date");
+    }
+
+    if (ui->comboBoxFilter->currentIndex() == 2) {
+        dataBase = DataStorage::mergeSort(dataBase, "rating");
     }
 
     checkNumOfImg();

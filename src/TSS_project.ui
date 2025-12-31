@@ -132,6 +132,11 @@
       <string>Date Created</string>
      </property>
     </item>
+    <item>
+     <property name="text">
+      <string>Rating</string>
+     </property>
+    </item>
    </widget>
    <widget class="QComboBox" name="comboBoxRating">
     <property name="geometry">
