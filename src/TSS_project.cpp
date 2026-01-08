@@ -28,6 +28,8 @@ TSS_project::TSS_project(QWidget *parent)
 
     metaData.load();
     std::cout << "Meta JSON path:" << metaData.getMetaStoragePath().toStdString();
+
+    ui->buttonBack->setEnabled(false);
 }
 
 TSS_project::~TSS_project()
@@ -262,6 +264,7 @@ void TSS_project::showImg(const QString& imgPath, const QString& imgName, const 
 
 void TSS_project::showPage() {
     scene->clear();
+    ui->buttonBack->setEnabled(false);
 
     if (dataBase.size() == 0)
         return;
@@ -356,6 +359,7 @@ void TSS_project::showPage() {
                 QTimer::singleShot(0, this, [this, path, name, idx] {
                     ui->comboBoxRating->setEnabled(true);
                     ui->comboBoxTag->setEnabled(true);
+                    ui->buttonBack->setEnabled(true);
                     showImg(path, name, idx);   // call func showImg AFTER prev reading imgPath
                 });
             });
@@ -620,6 +624,7 @@ void TSS_project::on_buttonLeftScroll_clicked() {
                 if (!saveCurrentImage())
                     std::cout << "Error during saving";
 
+                ui->buttonBack->setEnabled(false);
             }
             else if (box.clickedButton() == btnSaveAs) {
                 if (!saveCurrentImageAs())
@@ -627,10 +632,12 @@ void TSS_project::on_buttonLeftScroll_clicked() {
                     
                 originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
                 //scanFolderOnce(actualDirPath);
+                ui->buttonBack->setEnabled(false);
             }
             else if (box.clickedButton() == btnDiscard) {
                 currentImage = currentImageOrigin;
                 isEditing = false;
+                ui->buttonBack->setEnabled(false);
             }
             else {
                 return;
@@ -643,6 +650,7 @@ void TSS_project::on_buttonLeftScroll_clicked() {
         if (newStartIdx < 0)
             return;
 
+        ui->buttonBack->setEnabled(false);
         buildCurrentPage(newStartIdx);
         clearSelection();
         showPage();
@@ -670,6 +678,8 @@ void TSS_project::on_buttonRightScroll_clicked() {
             if (box.clickedButton() == btnSave) {
                 if (!saveCurrentImage())
                     std::cout << "Error during saving";
+
+                ui->buttonBack->setEnabled(false);
                 //isEditing = false;
             }
             else if (box.clickedButton() == btnSaveAs) {
@@ -680,10 +690,13 @@ void TSS_project::on_buttonRightScroll_clicked() {
 
                 //isEditing = false;
                 //scanFolderOnce(actualDirPath);
+
+                ui->buttonBack->setEnabled(false);
             }
             else if (box.clickedButton() == btnDiscard) {
                 currentImage = currentImageOrigin;
                 isEditing = false;
+                ui->buttonBack->setEnabled(false);
             }
             else {
                 return;
@@ -696,6 +709,7 @@ void TSS_project::on_buttonRightScroll_clicked() {
         if (newStartIdx >= dataBase.size())
             return;
 
+        ui->buttonBack->setEnabled(false);
         buildCurrentPage(newStartIdx);
         clearSelection();
         showPage();
@@ -781,5 +795,12 @@ void TSS_project::on_rightRotation_clicked() {
         item->setTransformationMode(Qt::SmoothTransformation);
         scene->setSceneRect(item->boundingRect());
         ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    }
+}
+
+void TSS_project::on_buttonBack_clicked() {
+    if (isFolderOpenned) {
+        clearSelection();
+        showPage();
     }
 }
