@@ -32,6 +32,7 @@ private:
     bool isFolderOpenned = false;
     bool isEditing = false;
     int currentSortIdx = 0;
+    void clearSelection();
     //int prevNumOfImgs = 1;
     
 

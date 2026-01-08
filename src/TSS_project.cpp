@@ -111,6 +111,24 @@ void TSS_project::resaveToOrigin() {
     originDataBase[oi].setTag(dataBase[currentImgIdx].getTag());
 }
 
+void TSS_project::clearSelection() {
+    currentImage = QImage();
+    currentImgPath.clear();
+    currentImgIdx = -1;
+
+    ui->comboBoxRating->blockSignals(true);
+    ui->comboBoxTag->blockSignals(true);
+
+    ui->comboBoxRating->setCurrentIndex(0);
+    ui->comboBoxTag->setCurrentIndex(0);
+
+    ui->comboBoxRating->setEnabled(false);
+    ui->comboBoxTag->setEnabled(false);
+
+    ui->comboBoxRating->blockSignals(false);
+    ui->comboBoxTag->blockSignals(false);
+}
+
 void TSS_project::on_actionOpen_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
@@ -323,6 +341,8 @@ void TSS_project::showPage() {
         connect(pix,  &ClickableImgs::doubleClicked, this, // связываю дабл клик и ловлю по какой конкретно картинке он был
             [this, path, name, idx](QGraphicsPixmapItem* p) {
                 QTimer::singleShot(0, this, [this, path, name, idx] {
+                    ui->comboBoxRating->setEnabled(true);
+                    ui->comboBoxTag->setEnabled(true);
                     showImg(path, name, idx);   // call func showImg AFTER prev reading imgPath
                 });
             });
@@ -347,6 +367,9 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
             currentPage[i] = i + currentFirstIndex;
             //std::cout << "currentPage idx: " << i << "currentPage[idx] val: " << std::endl;
         }
+
+        if (numOfImgs != 1)
+            clearSelection();
 
         showPage();
     }
@@ -400,6 +423,7 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
     if (currentSortIdx == 2) {
         dataBase = originDataBase;
         dataBase = DataStorage::mergeSort(dataBase, "rating");
+        clearSelection();
     }
 }
 
@@ -434,17 +458,20 @@ void TSS_project::on_comboBoxTag_currentIndexChanged() {
     if (currentSortIdx == -1) {
         dataBase = originDataBase;
         filterCurrentIndexChanged("Animal");
+        clearSelection();
     }
 
     if (currentSortIdx == -2) {
         dataBase = originDataBase;
         filterCurrentIndexChanged("Landscape");
+        clearSelection();
     }
 
 }
 
 void TSS_project::filterCurrentIndexChanged(int idx) {
     if (isFolderOpenned) {
+
         if (idx == 0)
             dataBase = originDataBase;
 
@@ -475,6 +502,11 @@ void TSS_project::filterCurrentIndexChanged(int idx) {
             dataBase = DataStorage::mergeSort(dataBase, "rating");
         }
 
+        clearSelection();
+
+        currentPage.resize(numOfImgs);
+        for (int i = 0; i < numOfImgs; ++i) currentPage[i] = i;
+
         showPage();
     }
 }
@@ -484,6 +516,8 @@ void TSS_project::filterCurrentIndexChanged(QString tag) {
 
     dataBase = originDataBase;
     dataBase = DataStorage::filterByTag(dataBase, tag);
+
+    clearSelection();
 
     currentPage.resize(numOfImgs);
     for (int i = 0; i < numOfImgs; ++i) currentPage[i] = i;
@@ -514,6 +548,8 @@ void TSS_project::on_actionOpen_folder_triggered() {
     for (int i = 0; i < numOfImgs; i++) {
         currentPage[i] = i;
     }
+
+    clearSelection();
 
     showPage();
 
@@ -576,6 +612,8 @@ void TSS_project::on_buttonLeftScroll_clicked() {
         for (int i = 0; i < numOfImgs; i++)
             currentPage[i] -= numOfImgs;
 
+        clearSelection();
+
         showPage();
     }
 }
@@ -601,13 +639,15 @@ void TSS_project::on_buttonRightScroll_clicked() {
             if (box.clickedButton() == btnSave) {
                 if (!saveCurrentImage())
                     std::cout << "Error during saving";
-                    
+                //isEditing = false;
             }
             else if (box.clickedButton() == btnSaveAs) {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
 
                 originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+
+                //isEditing = false;
                 //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
@@ -625,6 +665,8 @@ void TSS_project::on_buttonRightScroll_clicked() {
         std::cout << "after return" << std::endl;
         for (int i = 0; i < numOfImgs; i++)
             currentPage[i] += numOfImgs;
+
+        clearSelection();
 
         showPage();
     }
