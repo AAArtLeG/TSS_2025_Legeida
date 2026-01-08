@@ -569,6 +569,14 @@ void TSS_project::on_actionOpen_folder_triggered() {
         dataBase = DataStorage::mergeSort(dataBase, "rating");
     }
 
+    if (currentSortIdx == -1) {
+        filterCurrentIndexChanged("Animal");
+    }
+
+    if (currentSortIdx == 2) {
+        filterCurrentIndexChanged("Landscape");
+    }
+
     checkNumOfImg();
     buildCurrentPage(0);
 
