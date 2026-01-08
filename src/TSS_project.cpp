@@ -129,6 +129,19 @@ void TSS_project::clearSelection() {
     ui->comboBoxTag->blockSignals(false);
 }
 
+void TSS_project::buildCurrentPage(int firstIdx) {
+    currentPage.resize(numOfImgs);
+
+    for (int i = 0; i < numOfImgs; ++i) {
+        int idx = firstIdx + i;
+
+        if (idx < dataBase.size())
+            currentPage[i] = idx;
+        else
+            currentPage[i] = -1;
+    }
+}
+
 void TSS_project::on_actionOpen_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
@@ -254,7 +267,9 @@ void TSS_project::showPage() {
         return;
 
     if (numOfImgs == 1) {
-        const int idx = currentPage[0];
+        int idx = currentPage[0];
+        if (idx < 0 || idx >= dataBase.size())
+            return;
         ui->comboBoxRating->setEnabled(true);
         ui->comboBoxTag->setEnabled(true);
         showImg(dataBase[idx].getImgPath(), dataBase[idx].getImgName(), idx);
@@ -306,6 +321,9 @@ void TSS_project::showPage() {
         // top left corner coor
         const int cellX = margin + c * (thumbW + wGap);
         const int cellY = margin + r * (thumbH + 36 + hGap); // +36 for img name
+
+        if (currentPage[i] < 0 || currentPage[i] >= dataBase.size())
+            continue;
 
         const QString path = dataBase[currentPage[i]].getImgPath();
         const QString name = dataBase[currentPage[i]].getImgName();
@@ -425,8 +443,8 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
                 newIdx = i;
         }
         if (newIdx >= 0) {
-            currentImgIdx = newIdx;
-            currentPage[0] = currentImgIdx;
+            clearSelection();
+            buildCurrentPage(newIdx);
             showPage();
         }
         else {
@@ -513,8 +531,7 @@ void TSS_project::filterCurrentIndexChanged(int idx) {
 
         clearSelection();
 
-        currentPage.resize(numOfImgs);
-        for (int i = 0; i < numOfImgs; ++i) currentPage[i] = i;
+        buildCurrentPage(0);
 
         showPage();
     }
@@ -553,10 +570,7 @@ void TSS_project::on_actionOpen_folder_triggered() {
     }
 
     checkNumOfImg();
-    currentPage.resize(numOfImgs);
-    for (int i = 0; i < numOfImgs; i++) {
-        currentPage[i] = i;
-    }
+    buildCurrentPage(0);
 
     clearSelection();
 
@@ -615,14 +629,14 @@ void TSS_project::on_buttonLeftScroll_clicked() {
             }
         }
 
-        if (currentPage[0] - numOfImgs < 0)
+        int startIdx = currentPage[0];
+        int newStartIdx = startIdx - numOfImgs;
+
+        if (newStartIdx < 0)
             return;
 
-        for (int i = 0; i < numOfImgs; i++)
-            currentPage[i] -= numOfImgs;
-
+        buildCurrentPage(newStartIdx);
         clearSelection();
-
         showPage();
     }
 }
@@ -668,15 +682,14 @@ void TSS_project::on_buttonRightScroll_clicked() {
             }
         }
 
-        if (currentPage[numOfImgs - 1] + numOfImgs > dataBase.size() - 1)
+        int startIdx = currentPage[0];
+        int newStartIdx = startIdx + numOfImgs;
+
+        if (newStartIdx >= dataBase.size())
             return;
 
-        std::cout << "after return" << std::endl;
-        for (int i = 0; i < numOfImgs; i++)
-            currentPage[i] += numOfImgs;
-
+        buildCurrentPage(newStartIdx);
         clearSelection();
-
         showPage();
     }
 }

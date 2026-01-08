@@ -28,6 +28,8 @@ private:
     QString actualDirPath;
 
     std::vector<int> currentPage;
+    void buildCurrentPage(int firstIdx);
+
     int numOfImgs = 1;
     bool isFolderOpenned = false;
     bool isEditing = false;
