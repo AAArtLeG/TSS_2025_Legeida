@@ -91,7 +91,7 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
         dataBase.push_back(i);
     }
 
-    //originDB = dataBase;
+    originDB = dataBase;
        
     return originDB;
 }
@@ -185,4 +185,17 @@ QVector<DataStorage> DataStorage::mergeSort(QVector<DataStorage>& dataBase, QStr
 
         return mergeByRating(L, R);
     }
+}
+
+QVector<DataStorage> DataStorage::filterByTag(QVector<DataStorage>& dataBase, QString& typeOfFilter) {
+    const QString active = typeOfFilter;
+    if (active.isEmpty()) 
+        return dataBase;
+
+    for (int i = dataBase.size() - 1; i >= 0; --i) {
+        if (dataBase[i].getTag() != active)
+            dataBase.removeAt(i);
+    }
+
+    return dataBase;
 }

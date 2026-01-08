@@ -39,6 +39,9 @@ private:
     MetaDataStorage metaData;
     QVector<DataStorage> originDataBase;
 
+    int findInOriginByPath(const QString& absPath);
+    void resaveToOrigin();
+
     void checkNumOfImg();
     void showPage();
     void showImg(const QString& imgPath, const QString& imgName, const int& imgIdx);

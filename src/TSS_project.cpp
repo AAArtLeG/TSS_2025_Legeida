@@ -55,7 +55,6 @@ void TSS_project::setupFilterMenu() {
     modeGroup->addAction(actSortByRating);
 
     QMenu* tagSubMenu = menu->addMenu("Filter by tag");
-    QAction* actTagAll = tagSubMenu->addAction("All tags");
 
     QAction* actTagAnimal = tagSubMenu->addAction("Animal");
     QAction* actTagLandscape = tagSubMenu->addAction("Landscape");
@@ -82,17 +81,34 @@ void TSS_project::setupFilterMenu() {
         filterCurrentIndexChanged(2);
         });
 
-    connect(actTagAll, &QAction::triggered, this, [this] {
-        //filterCurrentIndexChanged("all"); 
-        });
-
     connect(actTagAnimal, &QAction::triggered, this, [this] {
-        //filterCurrentIndexChanged("Animal");
+        currentSortIdx = -1;
+        ui->toolButtonFilter->setText("Animal");
+        filterCurrentIndexChanged("Animal");
         });
 
     connect(actTagLandscape, &QAction::triggered, this, [this] {
-        //filterCurrentIndexChanged("Landscape");
+        currentSortIdx = -2;
+        ui->toolButtonFilter->setText("Landscape");
+        filterCurrentIndexChanged("Landscape");
         });
+}
+
+int TSS_project::findInOriginByPath(const QString& absPath) {
+    for (int i = 0; i < originDataBase.size(); ++i) {
+        if (originDataBase[i].getImgPath() == absPath)
+            return i;
+    }
+    return -1;
+}
+
+void TSS_project::resaveToOrigin() {
+    const QString p = currentImgPath;
+    const int oi = findInOriginByPath(p);
+    if (oi < 0) return;
+
+    originDataBase[oi].setRating(dataBase[currentImgIdx].getRating());
+    originDataBase[oi].setTag(dataBase[currentImgIdx].getTag());
 }
 
 void TSS_project::on_actionOpen_triggered()
@@ -215,6 +231,10 @@ void TSS_project::showImg(const QString& imgPath, const QString& imgName, const 
 
 void TSS_project::showPage() {
     scene->clear();
+
+    if (dataBase.size() == 0)
+        return;
+
     if (numOfImgs == 1) {
         const QString& path = dataBase[currentPage[0]].getImgPath();
         QImage img(path);
@@ -374,9 +394,13 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
         metaData.setInRecords(currentImgPath, 5, dataBase[currentImgIdx].getTag());
         metaData.save();
     }
+
+    resaveToOrigin();
         
-    if (currentSortIdx == 2)
+    if (currentSortIdx == 2) {
+        dataBase = originDataBase;
         dataBase = DataStorage::mergeSort(dataBase, "rating");
+    }
 }
 
 void TSS_project::on_comboBoxTag_currentIndexChanged() {
@@ -404,12 +428,25 @@ void TSS_project::on_comboBoxTag_currentIndexChanged() {
         metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
         metaData.save();
     }
+
+    resaveToOrigin();
+
+    if (currentSortIdx == -1) {
+        dataBase = originDataBase;
+        filterCurrentIndexChanged("Animal");
+    }
+
+    if (currentSortIdx == -2) {
+        dataBase = originDataBase;
+        filterCurrentIndexChanged("Landscape");
+    }
+
 }
 
 void TSS_project::filterCurrentIndexChanged(int idx) {
     if (isFolderOpenned) {
         if (idx == 0)
-            DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+            dataBase = originDataBase;
 
         if (idx == 1) {
             //TESTS
@@ -418,6 +455,7 @@ void TSS_project::filterCurrentIndexChanged(int idx) {
             << dataBase[i].getDateCreated().toString(Qt::ISODate).toStdString()
             << "\n";*/
 
+            dataBase = originDataBase;
             dataBase = DataStorage::mergeSort(dataBase, "date");
 
             //TESTS
@@ -432,11 +470,25 @@ void TSS_project::filterCurrentIndexChanged(int idx) {
 
         }
 
-        if (idx == 2)
+        if (idx == 2){
+            dataBase = originDataBase;
             dataBase = DataStorage::mergeSort(dataBase, "rating");
-        
+        }
+
         showPage();
     }
+}
+
+void TSS_project::filterCurrentIndexChanged(QString tag) {
+    if (!isFolderOpenned) return;
+
+    dataBase = originDataBase;
+    dataBase = DataStorage::filterByTag(dataBase, tag);
+
+    currentPage.resize(numOfImgs);
+    for (int i = 0; i < numOfImgs; ++i) currentPage[i] = i;
+
+    showPage();
 }
 
 void TSS_project::on_actionOpen_folder_triggered() {
@@ -506,7 +558,7 @@ void TSS_project::on_buttonLeftScroll_clicked() {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
                     
-                DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
                 //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {
@@ -555,7 +607,7 @@ void TSS_project::on_buttonRightScroll_clicked() {
                 if (!saveCurrentImageAs())
                     std::cout << "Error during saving";
 
-                DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
                 //scanFolderOnce(actualDirPath);
             }
             else if (box.clickedButton() == btnDiscard) {

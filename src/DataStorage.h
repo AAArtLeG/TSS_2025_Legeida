@@ -32,6 +32,7 @@ public:
 	static QVector<DataStorage> mergeByDates(QVector<DataStorage>& L, QVector<DataStorage>& R);
 	static QVector<DataStorage> mergeByRating(QVector<DataStorage>& L, QVector<DataStorage>& R);
 	static QVector<DataStorage> mergeSort(QVector<DataStorage>& dataBase, QString typeOfFilter);
+	static QVector<DataStorage> filterByTag(QVector<DataStorage>& dataBase, QString& typeOfFilter);
 private:
 	QString imgPath;
 	QString imgName;
