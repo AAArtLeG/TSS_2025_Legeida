@@ -254,15 +254,10 @@ void TSS_project::showPage() {
         return;
 
     if (numOfImgs == 1) {
-        const QString& path = dataBase[currentPage[0]].getImgPath();
-        QImage img(path);
-        if (!img.isNull()) {
-            scene->clear();
-            item = scene->addPixmap(QPixmap::fromImage(img));
-            item->setTransformationMode(Qt::SmoothTransformation);
-            scene->setSceneRect(item->boundingRect());
-            ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
-        }
+        const int idx = currentPage[0];
+        ui->comboBoxRating->setEnabled(true);
+        ui->comboBoxTag->setEnabled(true);
+        showImg(dataBase[idx].getImgPath(), dataBase[idx].getImgName(), idx);
         return;
     }
 
@@ -423,7 +418,21 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
     if (currentSortIdx == 2) {
         dataBase = originDataBase;
         dataBase = DataStorage::mergeSort(dataBase, "rating");
-        clearSelection();
+
+        int newIdx = -1;
+        for (int i = 0; i < dataBase.size(); ++i) {
+            if (dataBase[i].getImgPath() == currentImgPath)
+                newIdx = i;
+        }
+        if (newIdx >= 0) {
+            currentImgIdx = newIdx;
+            currentPage[0] = currentImgIdx;
+            showPage();
+        }
+        else {
+            clearSelection();
+        }
+
     }
 }
 
