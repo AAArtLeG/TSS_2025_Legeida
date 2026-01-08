@@ -19,8 +19,6 @@ TSS_project::TSS_project(QWidget *parent)
 {
     ui->setupUi(this);
 
-
-    scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(scene);
     currentPage.resize(numOfImgs);
 
@@ -34,6 +32,7 @@ TSS_project::TSS_project(QWidget *parent)
 
 TSS_project::~TSS_project()
 {
+    delete ui;
 }
 
 void TSS_project::setupFilterMenu() {
@@ -153,6 +152,8 @@ void TSS_project::on_actionOpen_triggered()
     if (img.isNull()) return;
     
     currentImage = img;
+    currentImgPath = fileName;
+    currentImgIdx = -1;
     scene->clear();
     item = scene->addPixmap(QPixmap::fromImage(img));
     item->setTransformationMode(Qt::SmoothTransformation);
@@ -162,20 +163,10 @@ void TSS_project::on_actionOpen_triggered()
 
 void TSS_project::on_actionSaveAs_triggered()
 {
-    if (currentImage.isNull())
+    if (!saveCurrentImageAs()) {
+        std::cout << "Error during saving";
         return;
-
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
-    if (fileName.isEmpty()) return;
-
-    QImage img(fileName);
-    if (img.isNull()) return;
-
-    scene->clear();
-    item = scene->addPixmap(QPixmap::fromImage(img));
-    item->setTransformationMode(Qt::SmoothTransformation);
-    scene->setSceneRect(item->boundingRect());
-    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    }
 }
 
 bool TSS_project::saveCurrentImage() {
@@ -214,6 +205,7 @@ bool TSS_project::saveCurrentImageAs() {
         return false;
     }
     isEditing = false;
+    currentImgPath = fileName;
     return true;
 }
 
@@ -396,6 +388,9 @@ void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
 void TSS_project::on_comboBoxRating_currentIndexChanged(){
     if (currentImage.isNull()) return;
 
+    if (currentImgIdx < 0)
+        return;
+
     if (ui->comboBoxRating->currentIndex() == 0){
         dataBase[currentImgIdx].setRating(0);
         metaData.setInRecords(currentImgPath, 0, dataBase[currentImgIdx].getTag());
@@ -460,6 +455,10 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
 
 void TSS_project::on_comboBoxTag_currentIndexChanged() {
     if (currentImage.isNull()) return;
+
+    if (currentImgIdx < 0 || currentImgIdx >= dataBase.size())
+        return;
+        
 
     QString tag = "";
 
@@ -577,7 +576,7 @@ void TSS_project::on_actionOpen_folder_triggered() {
         filterCurrentIndexChanged("Animal");
     }
 
-    if (currentSortIdx == 2) {
+    if (currentSortIdx == -2) {
         filterCurrentIndexChanged("Landscape");
     }
 

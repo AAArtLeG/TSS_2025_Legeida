@@ -79,8 +79,9 @@ QVector<DataStorage> DataStorage::scanFolder(const QString& dirPath, QVector<Dat
         DataStorage i;
         i.setImgName(fi.fileName());
         i.setImgPath(fi.absoluteFilePath());
-        i.setDateCreated(fi.birthTime());
-        //i.rating = 1;
+        QDateTime dt = fi.birthTime();
+        if (!dt.isValid()) dt = fi.lastModified();
+            i.setDateCreated(dt);
 
         const QString absPath = fi.absoluteFilePath();
         quint64 size = static_cast<quint64>(fi.size());
