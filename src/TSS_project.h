@@ -6,6 +6,7 @@
 #include "ui_TSS_project.h"
 #include "DataStorage.h"
 #include "ClickableImgs.h"
+#include "ImageEditor.h"
 
 class TSS_project : public QMainWindow
 {
@@ -33,8 +34,6 @@ private:
     int numOfImgs = 1;
     bool isFolderOpenned = false;
     bool isEditing = false;
-    int brightnessСhange = 0;
-    QImage brightnessBase;
     //bool isItFirstEdit = true;
     int currentSortIdx = 0;
     void clearSelection();
@@ -44,11 +43,13 @@ private:
     QVector<DataStorage> dataBase;
     MetaDataStorage metaData;
     QVector<DataStorage> originDataBase;
+    ImageEditor editor;
 
     int findInOriginByPath(const QString& absPath);
     void resaveToOrigin();
 
     void checkNumOfImg();
+    void displayImage(const QImage& img);
     void showPage();
     void showImg(const QString& imgPath, const QString& imgName, const int& imgIdx);
     bool saveCurrentImage();
@@ -56,8 +57,6 @@ private:
     void setupFilterMenu();
     void filterCurrentIndexChanged(int idx);
     void filterCurrentIndexChanged(QString tag);
-    int toFitChannelRange(int channelValue);
-    bool isPixOnBorder(const QRgb& p);
     void isImgWasReturnToOrigin(const QImage& img);
 private slots:
     //fileDialogFunctions 

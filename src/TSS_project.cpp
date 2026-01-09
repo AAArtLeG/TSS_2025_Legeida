@@ -223,6 +223,14 @@ void TSS_project::checkNumOfImg() {
         numOfImgs = 8;
 }
 
+void TSS_project::displayImage(const QImage& img) {
+    scene->clear();
+    item = scene->addPixmap(QPixmap::fromImage(img));
+    item->setTransformationMode(Qt::SmoothTransformation);
+    scene->setSceneRect(item->boundingRect());
+    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+}
+
 void TSS_project::showImg(const QString& imgPath, const QString& imgName, const int& imgIdx) {
     QImage img(imgPath);
     if (!img.isNull()) {
@@ -230,11 +238,7 @@ void TSS_project::showImg(const QString& imgPath, const QString& imgName, const 
         currentImgPath = imgPath;
         currentImgIdx = imgIdx;
 
-        scene->clear();
-        item = scene->addPixmap(QPixmap::fromImage(img));
-        item->setTransformationMode(Qt::SmoothTransformation);
-        scene->setSceneRect(item->boundingRect());
-        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+        displayImage(img);
 
         ui->comboBoxRating->blockSignals(true);
         ui->comboBoxRating->setCurrentIndex(dataBase[currentImgIdx].getRating());
@@ -617,36 +621,13 @@ void TSS_project::on_leftRotation_clicked() {
 
     QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
 
-    QImage dst(src.height(), src.width(), QImage::Format_ARGB32); // swap h and w
-
-    int w = src.width();
-    int h = src.height();
-
-    Q_ASSERT(dst.width() == h);
-    Q_ASSERT(dst.height() == w);
-
-    for (int i = 0; i < h; i++) { // y
-        const QRgb* srow = reinterpret_cast<const QRgb*>(src.constScanLine(i)); // i-ty riadok
-        for (int j = 0; j < w; j++) { // x
-            int newJ = i; 
-            int newI = w - 1 - j; 
-
-            QRgb* drow = reinterpret_cast<QRgb*>(dst.scanLine(newI)); // new row
-
-            drow[newJ] = srow[j];
-        }
-    }
+    QImage dst = editor.rotate(true, src);
 
     isImgWasReturnToOrigin(dst);
 
     if (!dst.isNull()) {
-        QImage img = dst;
         currentImage = dst;
-        scene->clear();
-        item = scene->addPixmap(QPixmap::fromImage(img));
-        item->setTransformationMode(Qt::SmoothTransformation);
-        scene->setSceneRect(item->boundingRect());
-        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+        displayImage(currentImage);
     }
 }
 
@@ -660,135 +641,37 @@ void TSS_project::on_rightRotation_clicked() {
 
     QImage src = currentImage.convertToFormat(QImage::Format_ARGB32);
 
-    QImage dst(src.height(), src.width(), QImage::Format_ARGB32); // swap h and w
-
-    int w = src.width();
-    int h = src.height();
-
-    Q_ASSERT(dst.width() == h);
-    Q_ASSERT(dst.height() == w);
-
-    for (int i = 0; i < h; i++) { // y
-        const QRgb* srow = reinterpret_cast<const QRgb*>(src.constScanLine(i)); // i-ty riadok
-        for (int j = 0; j < w; j++) { // x
-            int newI = j;
-            int newJ = h - 1 - i;
-
-            QRgb* drow = reinterpret_cast<QRgb*>(dst.scanLine(newI)); // new row
-            drow[newJ] = srow[j];
-        }
-    }
+    QImage dst = editor.rotate(false, src);
 
     isImgWasReturnToOrigin(dst);
 
     if (!dst.isNull()) {
-        QImage img = dst;
         currentImage = dst;
-        scene->clear();
-        item = scene->addPixmap(QPixmap::fromImage(img));
-        item->setTransformationMode(Qt::SmoothTransformation);
-        scene->setSceneRect(item->boundingRect());
-        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+        displayImage(currentImage);
     }
-}
-
-int TSS_project::toFitChannelRange(int channelValue) {
-    if (channelValue < 0)
-        channelValue = 0;
-    
-    if (channelValue > 255)
-        channelValue = 255;
-
-    return channelValue;
-}
-
-bool TSS_project::isPixOnBorder(const QRgb& p) {
-    if ((qRed(p) >= 250 && qGreen(p) >= 250 && qBlue(p) >= 250) || (qRed(p) <= 5 && qGreen(p) <= 5 && qBlue(p) <= 5))
-        return true;
-    else
-        return false;
 }
 
 void TSS_project::on_minusBrightnessBtn_clicked() {
     if (currentImage.isNull())
         return;
 
-    if (brightnessBase.isNull()) {
-        brightnessBase = currentImage.convertToFormat(QImage::Format_ARGB32);
-        brightnessСhange = 0;
-    }
-
-    int delta = -10;
-
-    brightnessСhange = brightnessСhange + delta;
-    if (brightnessСhange > 255)
-        brightnessСhange = 255;
-    if (brightnessСhange < -255)
-        brightnessСhange = -255;
-    //QImage img = brightnessBase.copy(); 
-
-    QImage img = currentImage.convertToFormat(QImage::Format_ARGB32);
-
-    int w = img.width();
-    int h = img.height();
-
-    double totalS = double(w) * double(h);
-    if (totalS <= 0.0)
-        return;
-
-    double pixOnBorderInOld = 0.0;
-    double pixOnBorderInNew = 0.0;
-
-    for (int y = 0; y < h; ++y) {
-        QRgb* row = reinterpret_cast<QRgb*>(img.scanLine(y)); // get one horizontal line of pixels
-        for (int x = 0; x < w; ++x) {
-            QRgb p = row[x];
-
-            if (isPixOnBorder(p))
-                pixOnBorderInOld++;
-
-            int a = qAlpha(p);
-            int r = toFitChannelRange(qRed(p) + delta);
-            int g = toFitChannelRange(qGreen(p) + delta);
-            int b = toFitChannelRange(qBlue(p) + delta);
-
-            row[x] = qRgba(r, g, b, a);
-
-            if (isPixOnBorder(row[x]))
-                pixOnBorderInNew++;
-        }
-    }
-
-    double oldClipPix = pixOnBorderInOld / totalS;
-    double newClipPix = pixOnBorderInNew / totalS;
-    double dClipPix = newClipPix - oldClipPix;
-
-    if (dClipPix > 0.05 || newClipPix > 0.7) {
-        QString msg = QString("Clipping: %1% (Δ %2%)")
-            .arg(int(newClipPix * 100.0 + 0.5))
-            .arg(int(dClipPix * 100.0 + 0.5));
-
-        statusBar()->showMessage(("WARNING (too many pixels on \"border\") : " + msg), 2000);
-    }
-    else {
-        statusBar()->clearMessage();
-    }
-
     if (!isEditing) {
         isEditing = true;
         currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
     }
 
-    isImgWasReturnToOrigin(img);
-    
-    if (!img.isNull()) {
-        currentImage = img;
+    QString msg = editor.changeBrightness(-10, currentImage);
 
-        scene->clear();
-        item = scene->addPixmap(QPixmap::fromImage(currentImage));
-        item->setTransformationMode(Qt::SmoothTransformation);
-        scene->setSceneRect(item->boundingRect());
-        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+    
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
     }
 }
 
@@ -796,70 +679,23 @@ void TSS_project::on_plusBrightnessBtn_clicked() {
     if (currentImage.isNull())
         return;
 
-    int delta = 10;
-
-    QImage img = currentImage.convertToFormat(QImage::Format_ARGB32);
-
-    int w = img.width();
-    int h = img.height();
-
-    double totalS = double(w) * double(h);
-    if (totalS <= 0.0)
-        return;
-
-    double pixOnBorderInOld = 0.0;
-    double pixOnBorderInNew = 0.0;
-
-    for (int y = 0; y < h; ++y) {
-        QRgb* row = reinterpret_cast<QRgb*>(img.scanLine(y)); // get one horizontal line of pixels
-        for (int x = 0; x < w; ++x) {
-            QRgb p = row[x];
-
-            if (isPixOnBorder(p))
-                pixOnBorderInOld++;
-
-            int a = qAlpha(p);
-            int r = toFitChannelRange(qRed(p) + delta);
-            int g = toFitChannelRange(qGreen(p) + delta);
-            int b = toFitChannelRange(qBlue(p) + delta);
-
-            row[x] = qRgba(r, g, b, a);
-
-            if (isPixOnBorder(row[x]))
-                pixOnBorderInNew++;
-        }
-    }
-
-    double oldClipPix = pixOnBorderInOld / totalS;
-    double newClipPix = pixOnBorderInNew / totalS;
-    double dClipPix = newClipPix - oldClipPix;
-
-    if (dClipPix > 0.05 || newClipPix > 0.7) {
-        QString msg = QString("Clipping: %1% (Δ %2%)")
-            .arg(int(newClipPix * 100.0 + 0.5))
-            .arg(int(dClipPix * 100.0 + 0.5));
-
-        statusBar()->showMessage(("WARNING (too many pixels on \"border\") : " + msg), 2000);
-    }
-    else {
-        statusBar()->clearMessage();
-    }
-
     if (!isEditing) {
         isEditing = true;
         currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
     }
 
-    isImgWasReturnToOrigin(img);
+    QString msg = editor.changeBrightness(10, currentImage);
 
-    if (!img.isNull()) {
-        currentImage = img;
-
-        scene->clear();
-        item = scene->addPixmap(QPixmap::fromImage(currentImage));
-        item->setTransformationMode(Qt::SmoothTransformation);
-        scene->setSceneRect(item->boundingRect());
-        ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+    
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
     }
 }
 
@@ -899,6 +735,7 @@ void TSS_project::on_buttonLeftScroll_clicked() {
                 currentImage = currentImageOrigin;
                 isEditing = false;
                 ui->buttonBack->setEnabled(false);
+                editor.cleanEditor();
             }
             else {
                 return;
@@ -912,6 +749,7 @@ void TSS_project::on_buttonLeftScroll_clicked() {
             return;
 
         ui->buttonBack->setEnabled(false);
+        editor.cleanEditor();
         buildCurrentPage(newStartIdx);
         clearSelection();
         showPage();
@@ -958,6 +796,7 @@ void TSS_project::on_buttonRightScroll_clicked() {
                 currentImage = currentImageOrigin;
                 isEditing = false;
                 ui->buttonBack->setEnabled(false);
+                editor.cleanEditor();
             }
             else {
                 return;
@@ -971,6 +810,7 @@ void TSS_project::on_buttonRightScroll_clicked() {
             return;
 
         ui->buttonBack->setEnabled(false);
+        editor.cleanEditor();
         buildCurrentPage(newStartIdx);
         clearSelection();
         showPage();
@@ -979,6 +819,47 @@ void TSS_project::on_buttonRightScroll_clicked() {
 
 void TSS_project::on_buttonBack_clicked() {
     if (isFolderOpenned) {
+        if (isEditing) {
+            QMessageBox box(this);
+            box.setIcon(QMessageBox::Question);
+            box.setWindowTitle(tr("Unsaved changes"));
+            box.setText(tr("You have unsaved changes. Save before navigating away?"));
+
+            QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
+            QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
+            QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+            QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+            box.setDefaultButton(btnSave);
+
+            box.exec();
+
+            if (box.clickedButton() == btnSave) {
+                if (!saveCurrentImage())
+                    std::cout << "Error during saving";
+
+                ui->buttonBack->setEnabled(false);
+            }
+            else if (box.clickedButton() == btnSaveAs) {
+                if (!saveCurrentImageAs())
+                    std::cout << "Error during saving";
+
+                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+                //scanFolderOnce(actualDirPath);
+                ui->buttonBack->setEnabled(false);
+            }
+            else if (box.clickedButton() == btnDiscard) {
+                currentImage = currentImageOrigin;
+                isEditing = false;
+                ui->buttonBack->setEnabled(false);
+                editor.cleanEditor();
+            }
+            else {
+                return;
+            }
+        }
+
+        editor.cleanEditor();
         clearSelection();
         showPage();
     }
