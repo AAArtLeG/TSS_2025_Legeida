@@ -85,11 +85,32 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>166</width>
+      <width>171</width>
       <height>541</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="1" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Rotate</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Brightness</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="3">
+      <widget class="QPushButton" name="rightRotation">
+       <property name="text">
+        <string>+90</string>
+       </property>
+      </widget>
+     </item>
      <item row="2" column="1">
       <widget class="QPushButton" name="leftRotation">
        <property name="text">
@@ -97,17 +118,17 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="rightRotation">
+     <item row="4" column="1">
+      <widget class="QPushButton" name="minusBrightnessBtn">
        <property name="text">
-        <string>+90</string>
+        <string>-10</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
-      <widget class="QLabel" name="label">
+     <item row="4" column="3">
+      <widget class="QPushButton" name="plusBrightnessBtn">
        <property name="text">
-        <string>Rotate</string>
+        <string>+10</string>
        </property>
       </widget>
      </item>

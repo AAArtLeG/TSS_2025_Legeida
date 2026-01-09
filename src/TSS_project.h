@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets>
 #include <QVector>
@@ -33,6 +33,9 @@ private:
     int numOfImgs = 1;
     bool isFolderOpenned = false;
     bool isEditing = false;
+    int brightnessСhange = 0;
+    QImage brightnessBase;
+    //bool isItFirstEdit = true;
     int currentSortIdx = 0;
     void clearSelection();
     //int prevNumOfImgs = 1;
@@ -53,6 +56,9 @@ private:
     void setupFilterMenu();
     void filterCurrentIndexChanged(int idx);
     void filterCurrentIndexChanged(QString tag);
+    int toFitChannelRange(int channelValue);
+    bool isPixOnBorder(const QRgb& p);
+    void isImgWasReturnToOrigin(const QImage& img);
 private slots:
     //fileDialogFunctions 
     void on_actionOpen_triggered();
@@ -63,6 +69,8 @@ private slots:
     void on_comboBoxTag_currentIndexChanged();
     void on_leftRotation_clicked();
     void on_rightRotation_clicked();
+    void on_minusBrightnessBtn_clicked();
+    void on_plusBrightnessBtn_clicked();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();
