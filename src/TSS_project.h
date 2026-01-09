@@ -69,7 +69,9 @@ private slots:
     void on_leftRotation_clicked();
     void on_rightRotation_clicked();
     void on_minusBrightnessBtn_clicked();
-    void on_plusBrightnessBtn_clicked();
+    void on_plusBrightnessBtn_clicked(); 
+    void on_minusContrastBtn_clicked();
+    void on_plusContrastBtn_clicked();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();

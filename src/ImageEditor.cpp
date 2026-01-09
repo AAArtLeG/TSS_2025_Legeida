@@ -4,6 +4,7 @@
 void ImageEditor::cleanEditor() {
 	forColorEditsBase = QImage();
 	brightnessСhange = 0;
+    contrastСhange = 0;
 }
 
 QImage ImageEditor::rotateLeft(QImage& src) {
@@ -151,6 +152,74 @@ QString ImageEditor::changeBrightness(int delta, QImage& src) {
     }
 
     if(!img.isNull())
+        src = img;
+
+    return msg;
+}
+
+QString ImageEditor::changeContrast(int delta, QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        contrastСhange = 0;
+    }
+
+    contrastСhange += delta;
+    if (contrastСhange > 255)
+        contrastСhange = 255;
+    if (contrastСhange < -255)
+        contrastСhange = -255;
+
+    QImage img = forColorEditsBase.copy();
+
+    //QImage img = currentImage.convertToFormat(QImage::Format_ARGB32);
+
+    int w = img.width();
+    int h = img.height();
+
+    double totalS = double(w) * double(h);
+    if (totalS <= 0.0)
+        return "WARNING: Image size is 0, contrast cant be edited";
+
+    double pixOnBorderInOld = 0.0;
+    double pixOnBorderInNew = 0.0;
+
+    double c = (259.0 * (contrastСhange + 255.0)) / (255.0 * (259.0 - contrastСhange));
+
+    for (int y = 0; y < h; ++y) {
+        QRgb* row = reinterpret_cast<QRgb*>(img.scanLine(y)); // get one horizontal line of pixels
+        for (int x = 0; x < w; ++x) {
+            QRgb p = row[x];
+
+            if (isPixOnBorder(p))
+                pixOnBorderInOld++;
+
+            int a = qAlpha(p);
+            int r = toFitChannelRange(int(std::lround((qRed(p) - 128.0) * c + 128.0)));
+            int g = toFitChannelRange(int(std::lround((qGreen(p) - 128.0) * c + 128.0)));
+            int b = toFitChannelRange(int(std::lround((qBlue(p) - 128.0) * c + 128.0)));
+
+            row[x] = qRgba(r, g, b, a);
+
+            if (isPixOnBorder(row[x]))
+                pixOnBorderInNew++;
+        }
+    }
+
+    oldClipPix = pixOnBorderInOld / totalS;
+    newClipPix = pixOnBorderInNew / totalS;
+    dClipPix = newClipPix - oldClipPix;
+
+    QString msg = QString();
+    if (dClipPix > 0.05 || newClipPix > 0.7) {
+        QString msg1 = QString("Clipping: %1% (Δ %2%)")
+            .arg(int(newClipPix * 100.0 + 0.5))
+            .arg(int(dClipPix * 100.0 + 0.5));
+
+        msg = "WARNING (too many pixels on \"border\") : " + msg1;
+        //statusBar()->showMessage(("WARNING (too many pixels on \"border\") : " + msg), 2000);
+    }
+
+    if (!img.isNull())
         src = img;
 
     return msg;
