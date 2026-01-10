@@ -72,6 +72,8 @@ private slots:
     void on_plusBrightnessBtn_clicked(); 
     void on_minusContrastBtn_clicked();
     void on_plusContrastBtn_clicked();
+    void on_minusSaturationBtn_clicked();
+    void on_plusSaturationBtn_clicked();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();

@@ -5,9 +5,13 @@ void ImageEditor::cleanEditor() {
 	forColorEditsBase = QImage();
 	brightnessСhange = 0;
     contrastСhange = 0;
+    saturationСhange = 0;
 }
 
 QString ImageEditor::applyColorEdits(QImage& src) {
+    if (forColorEditsBase.isNull())
+        return "WARNING: Base image is null; cannot apply color edits";
+
     QImage img = forColorEditsBase.copy();
 
     int w = img.width();
@@ -20,7 +24,13 @@ QString ImageEditor::applyColorEdits(QImage& src) {
     double pixOnBorderInOld = 0.0;
     double pixOnBorderInNew = 0.0;
 
+    //contrast correction factor
     double c = (259.0 * (contrastСhange + 255.0)) / (255.0 * (259.0 - contrastСhange));
+
+    //koef of how far we go FROM grayscale version of pixel color
+    double kSat = 1.0 + (double)saturationСhange / 255.0; // theoraticaly must be from 0 to 2
+    if (kSat < 0.0) 
+        kSat = 0.0;
 
     for (int y = 0; y < h; ++y) {
         QRgb* row = reinterpret_cast<QRgb*>(img.scanLine(y)); // get one horizontal line of pixels
@@ -31,13 +41,25 @@ QString ImageEditor::applyColorEdits(QImage& src) {
                 pixOnBorderInOld++;
 
             int a = qAlpha(p);
+
+            //overall formula: sturation(contrast(channel)) + brightness
             int r = toFitChannelRange(int(std::lround((qRed(p) - 128.0) * c + 128.0)));
             int g = toFitChannelRange(int(std::lround((qGreen(p) - 128.0) * c + 128.0)));
             int b = toFitChannelRange(int(std::lround((qBlue(p) - 128.0) * c + 128.0)));
 
+            // if we will imagine RGB like 3D space, THAN line R=G=B -> ray from (0,0,0) is grayscale version of color
+            // and (Y, Y, Y) is this grayscale version (G.V.) of our pixel
+            // saturation adjustment scales the deviation vector (R-Y, G-Y, B-Y) from R=G=B
+            // further from the ray R=G=B -> more saturated; closer -> less saturated.
+            double Y = 0.299 * r + 0.587 * g + 0.114 * b;
+
+            r = toFitChannelRange((int)std::lround(Y + (r - Y) * kSat));
+            g = toFitChannelRange((int)std::lround(Y + (g - Y) * kSat));
+            b = toFitChannelRange((int)std::lround(Y + (b - Y) * kSat));
+
             r = toFitChannelRange(r + brightnessСhange);
-            g = toFitChannelRange(g + brightnessСhange);;
-            b = toFitChannelRange(b + brightnessСhange);;
+            g = toFitChannelRange(g + brightnessСhange);
+            b = toFitChannelRange(b + brightnessСhange);
 
             row[x] = qRgba(r, g, b, a);
 
@@ -157,6 +179,7 @@ QString ImageEditor::changeBrightness(int delta, QImage& src) {
         forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
         brightnessСhange = 0;
         contrastСhange = 0;
+        saturationСhange = 0;
     }
 
     brightnessСhange += delta;
@@ -177,6 +200,7 @@ QString ImageEditor::changeContrast(int delta, QImage& src) {
         forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
         brightnessСhange = 0;
         contrastСhange = 0;
+        saturationСhange = 0;
     }
 
     contrastСhange += delta;
@@ -184,6 +208,27 @@ QString ImageEditor::changeContrast(int delta, QImage& src) {
         contrastСhange = 255;
     if (contrastСhange < -255)
         contrastСhange = -255;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
+}
+
+QString ImageEditor::changeSaturation(int delta, QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull())
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+    }
+
+    saturationСhange += delta;
+    if (saturationСhange > 255)
+        saturationСhange = 255;
+    if (saturationСhange < -255)
+        saturationСhange = -255;
 
     QString msg = applyColorEdits(src);
 

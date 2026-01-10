@@ -748,6 +748,54 @@ void TSS_project::on_plusContrastBtn_clicked() {
     }
 }
 
+void TSS_project::on_minusSaturationBtn_clicked() {
+    if (currentImage.isNull())
+        return;
+
+    if (!isEditing) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    QString msg = editor.changeSaturation(-30, currentImage);
+
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
+}
+
+void TSS_project::on_plusSaturationBtn_clicked() {
+    if (currentImage.isNull())
+        return;
+
+    if (!isEditing) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    QString msg = editor.changeSaturation(30, currentImage);
+
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
+}
+
 void TSS_project::on_buttonLeftScroll_clicked() {
     if (isFolderOpenned) {
 
