@@ -13,6 +13,8 @@ public:
 	QImage rotateRight(QImage& src);
 	QImage rotate(bool isLeft, QImage& img);
 
+	QString applyColorEdits(QImage& src);
+
 	int toFitChannelRange(int channelValue);
 	bool isPixOnBorder(const QRgb& p);
 	QString changeBrightness(int delta, QImage& src);
