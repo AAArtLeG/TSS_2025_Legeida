@@ -199,6 +199,15 @@ void TSS_project::on_actionOpen_triggered()
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
     if (fileName.isEmpty()) return;
 
+    if (isCropInProgress) 
+        endCrop();
+    editor.endCrop();
+    editor.cleanEditor();
+    isEditing = false;
+    currentImageOrigin = QImage();
+    cropBand->hide();
+    cropRectFromView = QRect();
+
     QImage img(fileName);
     if (img.isNull()) return;
     
@@ -288,6 +297,20 @@ void TSS_project::displayImage(const QImage& img) {
 }
 
 void TSS_project::showImg(const QString& imgPath, const QString& imgName, const int& imgIdx) {
+    if (imgPath != currentImgPath) {
+        if (isCropInProgress) 
+            endCrop();   
+        
+        editor.endCrop();                  
+        editor.cleanEditor();             
+
+        isEditing = false;
+        currentImageOrigin = QImage();
+
+        cropBand->hide();
+        cropRectFromView = QRect();
+    }
+
     QImage img(imgPath);
     if (!img.isNull()) {
         currentImage = img;
