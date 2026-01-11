@@ -7,8 +7,8 @@ void ImageEditor::cleanEditor() {
     contrastСhange = 0;
     saturationСhange = 0;
 
-    unsigned int styleFilter = 0;
-    bool isNegative = false;
+    styleFilter = 0;
+    isNegative = false;
 }
 
 QString ImageEditor::applyColorEdits(QImage& src) {
@@ -61,6 +61,26 @@ QString ImageEditor::applyColorEdits(QImage& src) {
             r = toFitChannelRange(r + brightnessСhange);
             g = toFitChannelRange(g + brightnessСhange);
             b = toFitChannelRange(b + brightnessСhange);
+
+            if (styleFilter == 1) {
+                //monochrome
+            }
+
+            if (styleFilter == 2) {
+                //serpia
+            }
+
+            if (styleFilter == 3) {
+                //pastel
+            }
+
+            if (styleFilter == 4) {
+                //vintage
+            }
+
+            if (isNegative) {
+                //negative
+            }
 
             row[x] = qRgba(r, g, b, a);
 
@@ -313,20 +333,97 @@ QString ImageEditor::applyMonochromeFilter(QImage& src) {
         contrastСhange = 0;
         saturationСhange = 0;
     }
+
+    styleFilter = 1;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
 }
 
 QString ImageEditor::applySepiaFilter(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull())
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+    }
 
+    styleFilter = 2;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
 }
 
 QString ImageEditor::applyPastelFilter(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull())
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+    }
 
+    styleFilter = 3;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
 }
 
 QString ImageEditor::applyVintageFilter(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull())
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+    }
 
+    styleFilter = 4;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
 }
 
 QString ImageEditor::applyNegative(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull())
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+    }
 
+    isNegative = true;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
+}
+
+QString ImageEditor::cleanStyleEditor(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull()) 
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+    }
+    styleFilter = 0;
+    return applyColorEdits(src);
+}
+
+QString ImageEditor::offNegative(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull()) return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+    }
+    isNegative = false;
+    return applyColorEdits(src);
 }

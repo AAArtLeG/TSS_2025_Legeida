@@ -25,6 +25,8 @@ public:
 	QString applyPastelFilter(QImage& src);
 	QString applyVintageFilter(QImage& src);
 	QString applyNegative(QImage& src);
+	QString cleanStyleEditor(QImage& src);
+	QString offNegative(QImage& src);
 private:
 	QImage rotateLeft(QImage& src);
 	QImage rotateRight(QImage& src);

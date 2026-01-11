@@ -1206,23 +1206,39 @@ void TSS_project::on_plusSaturationBtn_clicked() {
     }
 }
 
-void TSS_project::on_monochromeBtn_clicked() {
-    if (currentImage.isNull())
+void TSS_project::on_monochromeBtn_toggled(bool checked) {
+    if (currentImage.isNull()) {
+        ui->monochromeBtn->blockSignals(true);
+        ui->monochromeBtn->setChecked(false);
+        ui->monochromeBtn->blockSignals(false);
         return;
+    }
 
-    if (!isEditing) {
+    if (!checked) {
+        ui->pastelBtn->setEnabled(true);
+        ui->sepiaBtn->setEnabled(true);
+        ui->vintageBtn->setEnabled(true);
+
+        editor.cleanStyleEditor(currentImage);
+
+        if (!currentImage.isNull()) {
+            isImgWasReturnToOrigin(currentImage);
+            displayImage(currentImage);
+        }
+
+        return;
+    }
+
+    if (isEditing == false) {
         isEditing = true;
         currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
     }
 
-    QString msg = editor.changeSaturation(30, currentImage);
+    editor.applyMonochromeFilter(currentImage);
 
-    if (!msg.isNull()) {
-        statusBar()->showMessage(msg, 2000);
-    }
-    else {
-        statusBar()->clearMessage();
-    }
+    ui->pastelBtn->setEnabled(false);
+    ui->sepiaBtn->setEnabled(false);
+    ui->vintageBtn->setEnabled(false);
 
     if (!currentImage.isNull()) {
         isImgWasReturnToOrigin(currentImage);
@@ -1230,20 +1246,156 @@ void TSS_project::on_monochromeBtn_clicked() {
     }
 }
 
-void TSS_project::on_sepiaBtn_clicked() {
+void TSS_project::on_sepiaBtn_toggled(bool checked) {
+    if (currentImage.isNull()) {
+        ui->sepiaBtn->blockSignals(true);
+        ui->sepiaBtn->setChecked(false);
+        ui->sepiaBtn->blockSignals(false);
+        return;
+    }
 
+    if (!checked) {
+        ui->pastelBtn->setEnabled(true);
+        ui->monochromeBtn->setEnabled(true);
+        ui->vintageBtn->setEnabled(true);
+
+        editor.cleanStyleEditor(currentImage);
+
+        if (!currentImage.isNull()) {
+            isImgWasReturnToOrigin(currentImage);
+            displayImage(currentImage);
+        }
+
+        return;
+    }
+
+    if (isEditing == false) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    editor.applySepiaFilter(currentImage);
+
+    ui->pastelBtn->setEnabled(false);
+    ui->monochromeBtn->setEnabled(false);
+    ui->vintageBtn->setEnabled(false);
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
 }
 
-void TSS_project::on_pastelBtn_clicked() {
+void TSS_project::on_pastelBtn_toggled(bool checked) {
+    if (currentImage.isNull()) {
+        ui->pastelBtn->blockSignals(true);
+        ui->pastelBtn->setChecked(false);
+        ui->pastelBtn->blockSignals(false);
+        return;
+    }
 
+    if (!checked) {
+        ui->monochromeBtn->setEnabled(true);
+        ui->sepiaBtn->setEnabled(true);
+        ui->vintageBtn->setEnabled(true);
+
+        editor.cleanStyleEditor(currentImage);
+
+        if (!currentImage.isNull()) {
+            isImgWasReturnToOrigin(currentImage);
+            displayImage(currentImage);
+        }
+
+        return;
+    }
+
+    if (isEditing == false) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    editor.applyPastelFilter(currentImage);
+
+    ui->monochromeBtn->setEnabled(false);
+    ui->sepiaBtn->setEnabled(false);
+    ui->vintageBtn->setEnabled(false);
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
 }
 
-void TSS_project::on_vintageBtn_clicked() {
+void TSS_project::on_vintageBtn_toggled(bool checked) {
+    if (currentImage.isNull()) {
+        ui->vintageBtn->blockSignals(true);
+        ui->vintageBtn->setChecked(false);
+        ui->vintageBtn->blockSignals(false);
+        return;
+    }
 
+    if (!checked) {
+        ui->pastelBtn->setEnabled(true);
+        ui->sepiaBtn->setEnabled(true);
+        ui->monochromeBtn->setEnabled(true);
+
+        editor.cleanStyleEditor(currentImage);
+
+        if (!currentImage.isNull()) {
+            isImgWasReturnToOrigin(currentImage);
+            displayImage(currentImage);
+        }
+
+        return;
+    }
+
+    if (isEditing == false) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    editor.applyVintageFilter(currentImage);
+
+    ui->pastelBtn->setEnabled(false);
+    ui->sepiaBtn->setEnabled(false);
+    ui->monochromeBtn->setEnabled(false);
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
 }
 
-void TSS_project::on_negativeBtn_clicked() {
+void TSS_project::on_negativeBtn_toggled(bool checked) {
+    if (currentImage.isNull()) {
+        ui->negativeBtn->blockSignals(true);
+        ui->negativeBtn->setChecked(false);
+        ui->negativeBtn->blockSignals(false);
+        return;
+    }
 
+    if (!checked) {
+        editor.offNegative(currentImage);
+
+        if (!currentImage.isNull()) {
+            isImgWasReturnToOrigin(currentImage);
+            displayImage(currentImage);
+        }
+
+        return;
+    }
+
+    if (isEditing == false) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    editor.applyNegative(currentImage);
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
 }
 
 void TSS_project::on_buttonLeftScroll_clicked() {

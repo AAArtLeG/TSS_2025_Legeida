@@ -93,11 +93,11 @@ private slots:
     void on_plusContrastBtn_clicked();
     void on_minusSaturationBtn_clicked();
     void on_plusSaturationBtn_clicked();
-    void on_monochromeBtn_clicked();
-    void on_sepiaBtn_clicked();
-    void on_pastelBtn_clicked();
-    void on_vintageBtn_clicked();
-    void on_negativeBtn_clicked();
+    void on_monochromeBtn_toggled(bool checked);
+    void on_sepiaBtn_toggled(bool checked);
+    void on_pastelBtn_toggled(bool checked);
+    void on_vintageBtn_toggled(bool checked);
+    void on_negativeBtn_toggled(bool checked);
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();
