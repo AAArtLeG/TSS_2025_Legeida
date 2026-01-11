@@ -76,30 +76,45 @@ void TSS_project::setupFilterMenu() {
 
     //catching currentIndexChange from all options from action group
     connect(actNoFilter, &QAction::triggered, this, [this] {
+        if (!confirmUnsavedChanges())
+            return;
+
         currentSortIdx = 0;
         ui->toolButtonFilter->setText("No filter");
         filterCurrentIndexChanged(0); // бывший индекс combobox
         });
 
     connect(actSortByDate, &QAction::triggered, this, [this] {
+        if (!confirmUnsavedChanges())
+            return;
+
         currentSortIdx = 1;
         ui->toolButtonFilter->setText("Sort by date");
         filterCurrentIndexChanged(1);
         });
 
     connect(actSortByRating, &QAction::triggered, this, [this] {
+        if (!confirmUnsavedChanges())
+        return;
+
         currentSortIdx = 2;
         ui->toolButtonFilter->setText("Sort by rating");
         filterCurrentIndexChanged(2);
         });
 
     connect(actTagAnimal, &QAction::triggered, this, [this] {
+        if (!confirmUnsavedChanges())
+            return;
+
         currentSortIdx = -1;
         ui->toolButtonFilter->setText("Animal");
         filterCurrentIndexChanged("Animal");
         });
 
     connect(actTagLandscape, &QAction::triggered, this, [this] {
+        if (!confirmUnsavedChanges())
+            return;
+
         currentSortIdx = -2;
         ui->toolButtonFilter->setText("Landscape");
         filterCurrentIndexChanged("Landscape");
@@ -145,7 +160,6 @@ bool TSS_project::eventFilter(QObject* obj, QEvent* ev)
     return QMainWindow::eventFilter(obj, ev);
 }
 
-
 int TSS_project::findInOriginByPath(const QString& absPath) {
     for (int i = 0; i < originDataBase.size(); ++i) {
         if (originDataBase[i].getImgPath() == absPath)
@@ -181,6 +195,70 @@ void TSS_project::clearSelection() {
     ui->comboBoxTag->blockSignals(false);
 }
 
+bool TSS_project::confirmUnsavedChanges() {
+    if (isEditing) {
+        QMessageBox box(this);
+        box.setIcon(QMessageBox::Question);
+        box.setWindowTitle(tr("Unsaved changes"));
+        box.setText(tr("You have unsaved changes. Save before navigating away?"));
+
+        QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
+        QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
+        QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
+        QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+        box.setDefaultButton(btnSave);
+
+        box.exec();
+
+        if (box.clickedButton() == btnSave) {
+            if (!saveCurrentImage()){
+                std::cout << "Error during saving";
+                return false;
+            }
+            
+            endCrop();
+            ui->buttonBack->setEnabled(false);
+            //isEditing = false;
+            return true;
+        }
+        else if (box.clickedButton() == btnSaveAs) {
+            if (!saveCurrentImageAs()) {
+                std::cout << "Error during saving";
+                return false;
+            }
+
+            if (isFolderOpenned && !actualDirPath.isEmpty()) {
+                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+            }
+
+            //isEditing = false;
+            //scanFolderOnce(actualDirPath);
+
+            endCrop();
+            ui->buttonBack->setEnabled(false);
+
+            return true;
+        }
+        else if (box.clickedButton() == btnDiscard) {
+            isEditing = false;
+            ui->buttonBack->setEnabled(false);
+
+            endCrop();              
+            editor.cleanEditor();   
+
+            clearSelection();      
+
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else
+        return true;
+}
+
 void TSS_project::buildCurrentPage(int firstIdx) {
     currentPage.resize(numOfImgs);
 
@@ -198,6 +276,9 @@ void TSS_project::on_actionOpen_triggered()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
     if (fileName.isEmpty()) return;
+
+    if (!confirmUnsavedChanges())
+        return;
 
     if (isCropInProgress) 
         endCrop();
@@ -243,6 +324,7 @@ bool TSS_project::saveCurrentImage() {
         return false;
     }
     isEditing = false;
+    currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
     return true;
 }
 
@@ -266,6 +348,7 @@ bool TSS_project::saveCurrentImageAs() {
     }
     isEditing = false;
     currentImgPath = fileName;
+    currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
     return true;
 }
 
@@ -452,9 +535,53 @@ void TSS_project::showPage() {
 }
 
 void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
+    int prevNumOfImg = numOfImgs;
     checkNumOfImg();
+
+    if (isEditing) {
+        if (numOfImgs != 1) {
+            if (!confirmUnsavedChanges()) {
+                ui->comboSelectNumOfImgs->blockSignals(true);
+                if (prevNumOfImg == 1) {
+                    ui->comboSelectNumOfImgs->setCurrentIndex(0);
+                }
+                if (prevNumOfImg == 2) {
+                    ui->comboSelectNumOfImgs->setCurrentIndex(1);
+                }
+                if (prevNumOfImg == 4) {
+                    ui->comboSelectNumOfImgs->setCurrentIndex(2);
+                }
+                if (prevNumOfImg == 8) {
+                    ui->comboSelectNumOfImgs->setCurrentIndex(3);
+                }
+                ui->comboSelectNumOfImgs->blockSignals(false);
+                numOfImgs = prevNumOfImg;
+                return;
+            }
+        }
+        else {
+            if (isFolderOpenned) {
+                currentPage.resize(numOfImgs);
+
+                if (currentImgIdx >= 0)
+                    currentPage[0] = currentImgIdx;
+                else
+                    currentPage[0] = currentPage[0];
+                
+                ui->buttonBack->setEnabled(false); 
+
+                return;
+            }
+        }
+    }
+
     if (isFolderOpenned) {
         int currentFirstIndex = currentPage[0];
+
+        if (numOfImgs == 1 && currentImgIdx >= 0) {
+            currentFirstIndex = currentImgIdx;  
+        }
+
         currentPage.resize(numOfImgs);
         for (int i = 0; i < numOfImgs; i++) {
             currentPage[i] = i + currentFirstIndex;
@@ -525,14 +652,31 @@ void TSS_project::on_comboBoxRating_currentIndexChanged(){
             if (dataBase[i].getImgPath() == currentImgPath)
                 newIdx = i;
         }
+
         if (newIdx >= 0) {
-            clearSelection();
-            buildCurrentPage(newIdx);
-            showPage();
+            currentImgIdx = newIdx;
+
+            if (numOfImgs == 1) {
+                currentPage.resize(1);
+                currentPage[0] = newIdx;
+            }
+            else {
+                int newStart = (newIdx / numOfImgs) * numOfImgs;
+                buildCurrentPage(newStart);
+            }
+
         }
         else {
             clearSelection();
+            showPage();
+            return;
         }
+
+        if (isEditing)
+            return;
+
+        clearSelection();
+        showPage();
 
     }
 }
@@ -543,42 +687,91 @@ void TSS_project::on_comboBoxTag_currentIndexChanged() {
     if (currentImgIdx < 0 || currentImgIdx >= dataBase.size())
         return;
         
+    QString pathOfImg = currentImgPath;
+
+    QString oldTag = dataBase[currentImgIdx].getTag();
 
     QString tag = "";
 
-    if (ui->comboBoxTag->currentIndex() == 0) {
-        dataBase[currentImgIdx].setTag("");
-        metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
-        metaData.save();
-    }
-
-    if (ui->comboBoxTag->currentIndex() == 1) {
+    if (ui->comboBoxTag->currentIndex() == 0) 
+        tag = "";
+    if (ui->comboBoxTag->currentIndex() == 1) 
         tag = "Animal";
-        dataBase[currentImgIdx].setTag("Animal");
-        metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
-        metaData.save();
-    }
-
-
-    if (ui->comboBoxTag->currentIndex() == 2) {
+    if (ui->comboBoxTag->currentIndex() == 2) 
         tag = "Landscape";
-        dataBase[currentImgIdx].setTag("Landscape");
-        metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
-        metaData.save();
+
+    if (tag == oldTag) 
+        return;
+
+    QString activeFilter;
+
+    if (currentSortIdx == -1)
+        activeFilter = "Animal";
+    if (currentSortIdx == -2)
+        activeFilter = "Landscape";
+
+    bool willDisappearFromCurrentDB = (!activeFilter.isEmpty() && tag != activeFilter);
+
+    if (willDisappearFromCurrentDB && isEditing) {
+        if (!confirmUnsavedChanges()) {
+            ui->comboBoxTag->blockSignals(true);
+            if (oldTag == "Animal")
+                ui->comboBoxTag->setCurrentIndex(1);
+            else {
+                if (oldTag == "Landscape")
+                    ui->comboBoxTag->setCurrentIndex(2);
+                else
+                    ui->comboBoxTag->setCurrentIndex(0);
+            }
+            
+            ui->comboBoxTag->blockSignals(false);
+            return;
+        }
+
+        // user can choose discardBtn which containes clearSelection() - > no currentIdx and currentImage - > move back tag edit and like all other edits
+        if (currentImgIdx < 0 || currentImgIdx >= dataBase.size() || currentImage.isNull()) {
+            QString pathToUpdate;
+            if (!currentImgPath.isEmpty()) {
+                pathToUpdate = currentImgPath;
+            }
+            else {
+                pathToUpdate = pathOfImg;
+            }
+
+            int origIdx = findInOriginByPath(pathToUpdate);
+            if (origIdx >= 0) {
+                originDataBase[origIdx].setTag(tag);
+            }
+
+            int ratingForMeta = 0;
+            if (origIdx >= 0) 
+                ratingForMeta = originDataBase[origIdx].getRating();
+
+            metaData.setInRecords(pathToUpdate, ratingForMeta, tag);
+            metaData.save();
+
+            filterCurrentIndexChanged(activeFilter);
+            return;
+        }
+            
     }
+
+   
+
+    dataBase[currentImgIdx].setTag(tag);
+    metaData.setInRecords(currentImgPath, dataBase[currentImgIdx].getRating(), tag);
+    metaData.save();
 
     resaveToOrigin();
 
     if (currentSortIdx == -1) {
         dataBase = originDataBase;
         filterCurrentIndexChanged("Animal");
-        clearSelection();
     }
 
     if (currentSortIdx == -2) {
         dataBase = originDataBase;
         filterCurrentIndexChanged("Landscape");
-        clearSelection();
     }
 
 }
@@ -641,6 +834,9 @@ void TSS_project::filterCurrentIndexChanged(QString tag) {
 void TSS_project::on_actionOpen_folder_triggered() {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Select Folder"));
     if (dir.isEmpty()) return;
+
+    if (!confirmUnsavedChanges())
+        return;
 
     actualDirPath = dir;
 
@@ -706,6 +902,7 @@ void TSS_project::on_undoCropBtn_clicked() {
 
     // Перерисовать
     if (!currentImage.isNull())
+        isImgWasReturnToOrigin(currentImage);
         displayImage(currentImage);
 }
 
@@ -994,47 +1191,9 @@ void TSS_project::on_plusSaturationBtn_clicked() {
 void TSS_project::on_buttonLeftScroll_clicked() {
     if (isFolderOpenned) {
 
-        if (isEditing) {
-            QMessageBox box(this);
-            box.setIcon(QMessageBox::Question);
-            box.setWindowTitle(tr("Unsaved changes"));
-            box.setText(tr("You have unsaved changes. Save before navigating away?"));
-
-            QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
-            QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
-            QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
-            QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
-
-            box.setDefaultButton(btnSave);
-
-            box.exec();
-
-            if (box.clickedButton() == btnSave) {
-                if (!saveCurrentImage())
-                    std::cout << "Error during saving";
-
-                ui->buttonBack->setEnabled(false);
-            }
-            else if (box.clickedButton() == btnSaveAs) {
-                if (!saveCurrentImageAs())
-                    std::cout << "Error during saving";
-
-                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
-                //scanFolderOnce(actualDirPath);
-                ui->buttonBack->setEnabled(false);
-            }
-            else if (box.clickedButton() == btnDiscard) {
-                currentImage = currentImageOrigin;
-                isEditing = false;
-                ui->buttonBack->setEnabled(false);
-                editor.cleanEditor();
-                currentImage = QImage();
-                endCrop();
-            }
-            else {
-                return;
-            }
-        }
+        if (!confirmUnsavedChanges())
+            return;
+        
 
         int startIdx = currentPage[0];
         int newStartIdx = startIdx - numOfImgs;
@@ -1055,51 +1214,8 @@ void TSS_project::on_buttonLeftScroll_clicked() {
 void TSS_project::on_buttonRightScroll_clicked() {
     if (isFolderOpenned) {
 
-        if (isEditing) {
-            QMessageBox box(this);
-            box.setIcon(QMessageBox::Question);
-            box.setWindowTitle(tr("Unsaved changes"));
-            box.setText(tr("You have unsaved changes. Save before navigating away?"));
-
-            QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
-            QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
-            QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
-            QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
-
-            box.setDefaultButton(btnSave);
-
-            box.exec();
-
-            if (box.clickedButton() == btnSave) {
-                if (!saveCurrentImage())
-                    std::cout << "Error during saving";
-
-                ui->buttonBack->setEnabled(false);
-                //isEditing = false;
-            }
-            else if (box.clickedButton() == btnSaveAs) {
-                if (!saveCurrentImageAs())
-                    std::cout << "Error during saving";
-
-                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
-
-                //isEditing = false;
-                //scanFolderOnce(actualDirPath);
-
-                ui->buttonBack->setEnabled(false);
-            }
-            else if (box.clickedButton() == btnDiscard) {
-                currentImage = currentImageOrigin;
-                isEditing = false;
-                ui->buttonBack->setEnabled(false);
-                editor.cleanEditor();
-                currentImage = QImage();
-                endCrop();
-            }
-            else {
-                return;
-            }
-        }
+        if (!confirmUnsavedChanges())
+            return;
 
         int startIdx = currentPage[0];
         int newStartIdx = startIdx + numOfImgs;
@@ -1119,47 +1235,9 @@ void TSS_project::on_buttonRightScroll_clicked() {
 
 void TSS_project::on_buttonBack_clicked() {
     if (isFolderOpenned) {
-        if (isEditing) {
-            QMessageBox box(this);
-            box.setIcon(QMessageBox::Question);
-            box.setWindowTitle(tr("Unsaved changes"));
-            box.setText(tr("You have unsaved changes. Save before navigating away?"));
 
-            QPushButton* btnSave = box.addButton(tr("Save"), QMessageBox::AcceptRole);
-            QPushButton* btnSaveAs = box.addButton(tr("Save As…"), QMessageBox::ActionRole);
-            QPushButton* btnDiscard = box.addButton(tr("Discard"), QMessageBox::DestructiveRole);
-            QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
-
-            box.setDefaultButton(btnSave);
-
-            box.exec();
-
-            if (box.clickedButton() == btnSave) {
-                if (!saveCurrentImage())
-                    std::cout << "Error during saving";
-
-                ui->buttonBack->setEnabled(false);
-            }
-            else if (box.clickedButton() == btnSaveAs) {
-                if (!saveCurrentImageAs())
-                    std::cout << "Error during saving";
-
-                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
-                //scanFolderOnce(actualDirPath);
-                ui->buttonBack->setEnabled(false);
-            }
-            else if (box.clickedButton() == btnDiscard) {
-                currentImage = currentImageOrigin;
-                isEditing = false;
-                ui->buttonBack->setEnabled(false);
-                editor.cleanEditor();
-                currentImage = QImage();
-                endCrop();
-            }
-            else {
-                return;
-            }
-        }
+        if (!confirmUnsavedChanges())
+            return;
 
         editor.cleanEditor();
         currentImage = QImage();

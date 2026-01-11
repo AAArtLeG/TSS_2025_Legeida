@@ -34,6 +34,7 @@ private:
     int numOfImgs = 1;
     bool isFolderOpenned = false;
     bool isEditing = false;
+    bool confirmUnsavedChanges();
     //bool isItFirstEdit = true;
     int currentSortIdx = 0;
     void clearSelection();
