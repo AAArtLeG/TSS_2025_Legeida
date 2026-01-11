@@ -29,8 +29,6 @@ QString ImageEditor::applyColorEdits(QImage& src) {
 
     //koef of how far we go FROM grayscale version of pixel color
     double kSat = 1.0 + (double)saturationСhange / 255.0; // theoraticaly must be from 0 to 2
-    if (kSat < 0.0) 
-        kSat = 0.0;
 
     for (int y = 0; y < h; ++y) {
         QRgb* row = reinterpret_cast<QRgb*>(img.scanLine(y)); // get one horizontal line of pixels
@@ -84,6 +82,74 @@ QString ImageEditor::applyColorEdits(QImage& src) {
 
     if (!img.isNull())
         src = img;
+
+    return msg;
+}
+
+void ImageEditor::startCrop(const QImage& src)
+{
+    if (src.isNull())
+        return;
+
+    if (forColorEditsBase.isNull())
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+
+    if (cropSessionBase.isNull())
+        cropSessionBase = forColorEditsBase;
+}
+
+void ImageEditor::endCrop() {
+    cropSessionBase = QImage();
+}
+
+QString ImageEditor::resetCrops(QImage& src) {
+    if (cropSessionBase.isNull())
+        return "Nothing to reset";
+
+    forColorEditsBase = cropSessionBase.copy();
+
+    return applyColorEdits(src);
+}
+
+QString ImageEditor::crop(const QRectF& rect, QImage& src, QGraphicsPixmapItem* item) {
+    if (!item || src.isNull())
+        return "Invalid state for cropping";
+
+    if (forColorEditsBase.isNull())
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+
+    if (cropSessionBase.isNull())
+        cropSessionBase = forColorEditsBase;
+
+    //rectngle of currentImage in scene
+    QRectF sceneImg = item->sceneBoundingRect();
+
+    //crossed part between selected rect and rect of current image
+    QRectF sceneCrop = rect.intersected(sceneImg);
+
+    QString msg = QString();
+    if (sceneCrop.isEmpty()) {
+        msg = "Crop selection is outside the image";
+        return msg;
+    }
+
+    //transform crosed part to coordinates of item
+    QRectF itemCropF = item->mapFromScene(sceneCrop).boundingRect();
+
+    int x = int(std::floor(itemCropF.left()));
+    int y = int(std::floor(itemCropF.top()));
+    int w = int(std::ceil(itemCropF.width()));
+    int h = int(std::ceil(itemCropF.height()));
+
+    QRect cropPx(x, y, w, h);
+    cropPx = cropPx.intersected(src.rect());
+
+    if (!cropPx.isValid() || cropPx.isEmpty())
+        return "Invalid crop rectangle";
+
+    src = src.copy(cropPx);
+
+    forColorEditsBase = forColorEditsBase.copy(cropPx);
 
     return msg;
 }

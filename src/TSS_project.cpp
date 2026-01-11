@@ -10,6 +10,7 @@
 #include <vector>
 #include <QImageReader>
 #include <QGraphicsSimpleTextItem>
+#include <QRubberBand>
 #include <iostream>
 
 TSS_project::TSS_project(QWidget *parent)
@@ -28,6 +29,16 @@ TSS_project::TSS_project(QWidget *parent)
     std::cout << "Meta JSON path:" << metaData.getMetaStoragePath().toStdString();
 
     ui->buttonBack->setEnabled(false);
+
+    cropBand = new QRubberBand(QRubberBand::Rectangle, ui->graphicsView->viewport());
+    cropBand->hide();
+
+    //to make eventFilter() get called, we must set which object we will be filtred
+    //I choose to install viewport as an event filter, because on this inner widget of graphicsView technically arrived all mouse events
+    ui->graphicsView->viewport()->installEventFilter(this);
+
+    /*for (const QByteArray& f : QImageReader::supportedImageFormats())
+        qDebug() << f;*/
 }
 
 TSS_project::~TSS_project()
@@ -94,6 +105,46 @@ void TSS_project::setupFilterMenu() {
         filterCurrentIndexChanged("Landscape");
         });
 }
+
+bool TSS_project::eventFilter(QObject* obj, QEvent* ev)
+{
+    if (obj == ui->graphicsView->viewport() && isCropInProgress && item && !currentImage.isNull()) {
+
+        if (ev->type() == QEvent::MouseButtonPress) {
+            //catch Mouse event
+            auto* me = static_cast<QMouseEvent*>(ev);
+            if (me->button() == Qt::LeftButton) {
+                cropStart = me->pos();
+                //create rect which start at cropStart with zero size
+                cropBand->setGeometry(QRect(cropStart, QSize()));
+                cropBand->show();
+                //no default processing of this event
+                return true;
+            }
+        }
+
+        if (ev->type() == QEvent::MouseMove) {
+            auto* me = static_cast<QMouseEvent*>(ev);
+            //if before was left click catched
+            if (cropBand->isVisible()) {
+                cropBand->setGeometry(QRect(cropStart, me->pos()).normalized());
+                return true;
+            }
+        }
+
+        if (ev->type() == QEvent::MouseButtonRelease) {
+            auto* me = static_cast<QMouseEvent*>(ev);
+            if (me->button() == Qt::LeftButton && cropBand->isVisible()) {
+                cropRectFromView = cropBand->geometry().normalized();
+                return true;
+            }
+        }
+    }
+
+    //if its not our cropping case -> default event processing
+    return QMainWindow::eventFilter(obj, ev);
+}
+
 
 int TSS_project::findInOriginByPath(const QString& absPath) {
     for (int i = 0; i < originDataBase.size(); ++i) {
@@ -225,6 +276,11 @@ void TSS_project::checkNumOfImg() {
 
 void TSS_project::displayImage(const QImage& img) {
     scene->clear();
+    item = nullptr;
+
+    if (img.isNull()) 
+        return;
+
     item = scene->addPixmap(QPixmap::fromImage(img));
     item->setTransformationMode(Qt::SmoothTransformation);
     scene->setSceneRect(item->boundingRect());
@@ -260,6 +316,7 @@ void TSS_project::showImg(const QString& imgPath, const QString& imgName, const 
 
 void TSS_project::showPage() {
     scene->clear();
+    item = nullptr;
     ui->buttonBack->setEnabled(false);
 
     if (dataBase.size() == 0)
@@ -610,6 +667,121 @@ void TSS_project::isImgWasReturnToOrigin(const QImage& img) {
         isEditing = false;
 }
 
+void TSS_project::on_undoCropBtn_clicked() {
+    if (!isCropInProgress || currentImage.isNull())
+        return;
+
+    QString msg = editor.resetCrops(currentImage);
+
+    if (!msg.isNull() && !msg.isEmpty())
+        statusBar()->showMessage(msg, 2000);
+    else
+        statusBar()->clearMessage();
+
+    cropBand->hide();
+    cropRectFromView = QRect();
+
+    // Перерисовать
+    if (!currentImage.isNull())
+        displayImage(currentImage);
+}
+
+void TSS_project::on_applyCropBtn_clicked() {
+    if (!isCropInProgress || cropRectFromView.isNull() || currentImage.isNull() || !item)
+        return;
+
+    //selected rect to rect in coordinates of scene
+    QRectF sceneSel = ui->graphicsView->mapToScene(cropRectFromView).boundingRect();
+
+    QString msg = editor.crop(sceneSel, currentImage, item);
+
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+
+    cropBand->hide();
+    cropRectFromView = QRect();
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        std::cout << "contrast end" << std::endl;
+        displayImage(currentImage);
+    }
+}
+
+void TSS_project::on_cancelCropBtn_clicked() {
+    if (!isCropInProgress) 
+        return;
+
+    cropBand->hide();
+    cropRectFromView = QRect();
+}
+
+void TSS_project::endCrop() {
+    editor.endCrop();
+
+    isCropInProgress = false;
+
+    ui->cropBtn->blockSignals(true);
+    ui->cropBtn->setChecked(false);
+    ui->cropBtn->blockSignals(false);
+
+    cropBand->hide();
+    cropRectFromView = QRect();
+
+    ui->applyCropBtn->setEnabled(false);
+    ui->cancelCropBtn->setEnabled(false);
+    ui->undoCropBtn->setEnabled(false);
+
+    ui->leftRotation->setEnabled(true);
+    ui->rightRotation->setEnabled(true);
+    ui->minusBrightnessBtn->setEnabled(true);
+    ui->plusBrightnessBtn->setEnabled(true);
+    ui->minusContrastBtn->setEnabled(true);
+    ui->plusContrastBtn->setEnabled(true);
+    ui->minusSaturationBtn->setEnabled(true);
+    ui->plusSaturationBtn->setEnabled(true);
+}
+
+void TSS_project::on_cropBtn_toggled(bool checked) {
+    if (currentImage.isNull()) {
+        ui->cropBtn->blockSignals(true);
+        ui->cropBtn->setChecked(false);
+        ui->cropBtn->blockSignals(false);
+        return;
+    } 
+
+    isCropInProgress = checked;
+
+    if (!isCropInProgress) {
+        endCrop();
+        return;
+    }
+
+    editor.startCrop(currentImage);
+
+    if (isEditing == false) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    ui->applyCropBtn->setEnabled(true);
+    ui->cancelCropBtn->setEnabled(true);
+    ui->undoCropBtn->setEnabled(true);
+
+    ui->leftRotation->setEnabled(false);
+    ui->rightRotation->setEnabled(false);
+    ui->minusBrightnessBtn->setEnabled(false);
+    ui->plusBrightnessBtn->setEnabled(false);
+    ui->minusContrastBtn->setEnabled(false);
+    ui->plusContrastBtn->setEnabled(false);
+    ui->minusSaturationBtn->setEnabled(false);
+    ui->plusSaturationBtn->setEnabled(false);
+}
+
 void TSS_project::on_leftRotation_clicked() {
     if (currentImage.isNull()) return;
 
@@ -833,6 +1005,8 @@ void TSS_project::on_buttonLeftScroll_clicked() {
                 isEditing = false;
                 ui->buttonBack->setEnabled(false);
                 editor.cleanEditor();
+                currentImage = QImage();
+                endCrop();
             }
             else {
                 return;
@@ -847,6 +1021,8 @@ void TSS_project::on_buttonLeftScroll_clicked() {
 
         ui->buttonBack->setEnabled(false);
         editor.cleanEditor();
+        currentImage = QImage();
+        endCrop();
         buildCurrentPage(newStartIdx);
         clearSelection();
         showPage();
@@ -894,6 +1070,8 @@ void TSS_project::on_buttonRightScroll_clicked() {
                 isEditing = false;
                 ui->buttonBack->setEnabled(false);
                 editor.cleanEditor();
+                currentImage = QImage();
+                endCrop();
             }
             else {
                 return;
@@ -908,6 +1086,8 @@ void TSS_project::on_buttonRightScroll_clicked() {
 
         ui->buttonBack->setEnabled(false);
         editor.cleanEditor();
+        currentImage = QImage();
+        endCrop();
         buildCurrentPage(newStartIdx);
         clearSelection();
         showPage();
@@ -950,6 +1130,8 @@ void TSS_project::on_buttonBack_clicked() {
                 isEditing = false;
                 ui->buttonBack->setEnabled(false);
                 editor.cleanEditor();
+                currentImage = QImage();
+                endCrop();
             }
             else {
                 return;
@@ -957,6 +1139,8 @@ void TSS_project::on_buttonBack_clicked() {
         }
 
         editor.cleanEditor();
+        currentImage = QImage();
+        endCrop();
         clearSelection();
         showPage();
     }

@@ -4,11 +4,18 @@
 #include <QPixmap>
 #include <QVector>
 #include <QImageReader>
+#include <QGraphicsPixmapItem>
 
 class ImageEditor
 {
 public:
 	void cleanEditor();
+
+	void startCrop(const QImage& src);
+	QString resetCrops(QImage& src);
+	QString crop(const QRectF& rect, QImage& src, QGraphicsPixmapItem* item);
+	void endCrop();
+
 	QImage rotate(bool isLeft, QImage& img);
 	QString changeBrightness(int delta, QImage& src);
 	QString changeContrast(int delta, QImage& src);
@@ -22,6 +29,7 @@ private:
 	bool isPixOnBorder(const QRgb& p);
 
 	QImage forColorEditsBase;
+	QImage cropSessionBase;
 	
 	int brightnessСhange = 0;
 	int contrastСhange = 0;
@@ -29,4 +37,7 @@ private:
 	double oldClipPix = 0;
 	double newClipPix = 0;
 	double dClipPix = 0;
+
+	bool isCropInProgress = false;
+	QImage baseBeforeCrop;
 };
