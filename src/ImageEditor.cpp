@@ -6,6 +6,9 @@ void ImageEditor::cleanEditor() {
 	brightnessСhange = 0;
     contrastСhange = 0;
     saturationСhange = 0;
+
+    unsigned int styleFilter = 0;
+    bool isNegative = false;
 }
 
 QString ImageEditor::applyColorEdits(QImage& src) {
@@ -299,4 +302,31 @@ QString ImageEditor::changeSaturation(int delta, QImage& src) {
     QString msg = applyColorEdits(src);
 
     return msg;
+}
+
+QString ImageEditor::applyMonochromeFilter(QImage& src) {
+    if (forColorEditsBase.isNull()) {
+        if (src.isNull())
+            return "Invalid download of current image";
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+    }
+}
+
+QString ImageEditor::applySepiaFilter(QImage& src) {
+
+}
+
+QString ImageEditor::applyPastelFilter(QImage& src) {
+
+}
+
+QString ImageEditor::applyVintageFilter(QImage& src) {
+
+}
+
+QString ImageEditor::applyNegative(QImage& src) {
+
 }

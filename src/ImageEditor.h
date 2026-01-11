@@ -20,6 +20,11 @@ public:
 	QString changeBrightness(int delta, QImage& src);
 	QString changeContrast(int delta, QImage& src);
 	QString changeSaturation(int delta, QImage& src);
+	QString applyMonochromeFilter(QImage& src);
+	QString applySepiaFilter(QImage& src);
+	QString applyPastelFilter(QImage& src);
+	QString applyVintageFilter(QImage& src);
+	QString applyNegative(QImage& src);
 private:
 	QImage rotateLeft(QImage& src);
 	QImage rotateRight(QImage& src);
@@ -40,4 +45,7 @@ private:
 
 	bool isCropInProgress = false;
 	QImage baseBeforeCrop;
+
+	unsigned int styleFilter = 0;
+	bool isNegative = false;
 };

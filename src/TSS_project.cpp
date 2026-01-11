@@ -1206,6 +1206,46 @@ void TSS_project::on_plusSaturationBtn_clicked() {
     }
 }
 
+void TSS_project::on_monochromeBtn_clicked() {
+    if (currentImage.isNull())
+        return;
+
+    if (!isEditing) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    QString msg = editor.changeSaturation(30, currentImage);
+
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
+}
+
+void TSS_project::on_sepiaBtn_clicked() {
+
+}
+
+void TSS_project::on_pastelBtn_clicked() {
+
+}
+
+void TSS_project::on_vintageBtn_clicked() {
+
+}
+
+void TSS_project::on_negativeBtn_clicked() {
+
+}
+
 void TSS_project::on_buttonLeftScroll_clicked() {
     if (isFolderOpenned) {
 
