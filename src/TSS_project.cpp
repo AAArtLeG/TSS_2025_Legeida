@@ -11,6 +11,7 @@
 #include <QImageReader>
 #include <QGraphicsSimpleTextItem>
 #include <QRubberBand>
+#include <QScrollBar>
 #include <iostream>
 
 TSS_project::TSS_project(QWidget *parent)
@@ -438,8 +439,16 @@ void TSS_project::showPage() {
         return;
     }
 
-    const int gViewW = ui->graphicsView->width();
-    const int gViewH = ui->graphicsView->height();
+    //gallery must be drawn with a neutral (1:1) view transform.
+    //I do fitInView(item, Qt::KeepAspectRatio) in displayImg
+    //and this scale apllied on everything which QGraphicsView containes, so the gallery grid could not fit into the viewport
+    //right now this scale is turned back to 1:1, so our calculations applied "in raw" and every things displayed correctly
+    ui->graphicsView->resetTransform();
+    ui->graphicsView->horizontalScrollBar()->setValue(0);
+    ui->graphicsView->verticalScrollBar()->setValue(0);
+
+    const int gViewW = ui->graphicsView->viewport()->width();
+    const int gViewH = ui->graphicsView->viewport()->height();
 
     // grid parameters
     int cols = 0;
@@ -447,28 +456,36 @@ void TSS_project::showPage() {
     int thumbW = 0;
     int thumbH = 0;
     const int wGap = 16, hGap = 20;
+    const int marginFromTopAndBot = 5;
+    const int marginFromLeftAndRight = 5;
+    const int labelSize = 36;
+
+    int avaibleH;
 
     if (numOfImgs == 2 || numOfImgs == 4) {
         cols = 2;
         if (numOfImgs == 2) {
             rows = 1;
-            thumbH = (gViewH - 2 * hGap) / rows;
+            avaibleH = gViewH - 2 * marginFromTopAndBot - (rows - 1) * hGap - rows * labelSize;
+            thumbH = avaibleH / rows;
         }
         if (numOfImgs == 4) {
             rows = 2;
-            thumbH = (gViewH - 3 * hGap) / rows;
+            avaibleH = gViewH - 2 * marginFromTopAndBot - (rows - 1) * hGap - rows * labelSize;
+            thumbH = avaibleH / rows;
         }
-        thumbW = (gViewW - 3 * wGap) / cols;
+        thumbW = (gViewW - 3 * wGap - 2 * marginFromLeftAndRight) / cols;
     }
 
     if (numOfImgs == 8) {
         cols = 4;
         rows = 2;
-        thumbW = (gViewW - 5 * wGap) / cols;
-        thumbH = (gViewH - 3 * hGap) / rows;
+        avaibleH = gViewH - 2 * marginFromTopAndBot - (rows - 1) * hGap - rows * labelSize;
+        thumbH = avaibleH / rows;
+        thumbW = (gViewW - 5 * wGap - 2 * marginFromLeftAndRight) / cols;
     }
 
-    const int margin = 16;
+    
     const QFont labelFont("Segoe UI", 9);
 
     const int count = numOfImgs;
@@ -481,8 +498,8 @@ void TSS_project::showPage() {
         const int c = i % cols;
 
         // top left corner coor
-        const int cellX = margin + c * (thumbW + wGap);
-        const int cellY = margin + r * (thumbH + 36 + hGap); // +36 for img name
+        const int cellX = marginFromLeftAndRight + c * (thumbW + wGap);
+        const int cellY = marginFromTopAndBot + r * (thumbH + labelSize + hGap); // +36 for img name
 
         if (currentPage[i] < 0 || currentPage[i] >= dataBase.size())
             continue;
@@ -501,6 +518,7 @@ void TSS_project::showPage() {
         }
 
         QPixmap pm = QPixmap::fromImage(thumb);
+        pm = pm.scaled(thumbW, thumbH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
         auto* pix = new ClickableImgs(pm);
         scene->addItem(pix); // teraz na scene pridavame ne proste QPixmap, a elem ClickableImgs
 
@@ -531,7 +549,7 @@ void TSS_project::showPage() {
         maxY = std::max(maxY, cellY + thumbH + 24);
     }
 
-    scene->setSceneRect(0, 0, maxX + margin, maxY + margin);
+    scene->setSceneRect(0, 0, maxX + marginFromLeftAndRight, maxY + marginFromTopAndBot);
 }
 
 void TSS_project::on_comboSelectNumOfImgs_currentIndexChanged() {
