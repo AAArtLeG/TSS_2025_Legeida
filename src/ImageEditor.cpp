@@ -64,6 +64,13 @@ QString ImageEditor::applyColorEdits(QImage& src) {
 
             if (styleFilter == 1) {
                 //monochrome
+
+                double Ym = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                int gray = toFitChannelRange((int)std::lround(Ym));
+                r = gray;
+                g = gray;
+                b = gray;
             }
 
             if (styleFilter == 2) {
