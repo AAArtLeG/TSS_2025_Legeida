@@ -75,6 +75,14 @@ QString ImageEditor::applyColorEdits(QImage& src) {
 
             if (styleFilter == 2) {
                 //serpia
+
+                int rS = 0.393 * r + 0.769 * g + 0.189 * b;
+                int gS = 0.349 * r + 0.686 * g + 0.168 * b;
+                int bS = 0.272 * r + 0.534 * g + 0.131 * b;
+
+                r = toFitChannelRange((int)std::lround(rS));
+                g = toFitChannelRange((int)std::lround(bS));
+                b = toFitChannelRange((int)std::lround(gS));
             }
 
             if (styleFilter == 3) {

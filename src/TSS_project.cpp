@@ -194,6 +194,31 @@ void TSS_project::clearSelection() {
 
     ui->comboBoxRating->blockSignals(false);
     ui->comboBoxTag->blockSignals(false);
+
+    ui->pastelBtn->setEnabled(true);
+    ui->monochromeBtn->setEnabled(true);
+    ui->vintageBtn->setEnabled(true);
+    ui->sepiaBtn->setEnabled(true);
+
+    ui->pastelBtn->blockSignals(true);
+    ui->pastelBtn->setChecked(false);
+    ui->pastelBtn->blockSignals(false);
+
+    ui->monochromeBtn->blockSignals(true);
+    ui->monochromeBtn->setChecked(false);
+    ui->monochromeBtn->blockSignals(false);
+
+    ui->vintageBtn->blockSignals(true);
+    ui->vintageBtn->setChecked(false);
+    ui->vintageBtn->blockSignals(false);
+
+    ui->sepiaBtn->blockSignals(true);
+    ui->sepiaBtn->setChecked(false);
+    ui->sepiaBtn->blockSignals(false);
+
+    ui->negativeBtn->blockSignals(true);
+    ui->negativeBtn->setChecked(false);
+    ui->negativeBtn->blockSignals(false);
 }
 
 bool TSS_project::confirmUnsavedChanges() {
@@ -249,6 +274,8 @@ bool TSS_project::confirmUnsavedChanges() {
             editor.cleanEditor();   
 
             clearSelection();      
+
+            
 
             return true;
         }
