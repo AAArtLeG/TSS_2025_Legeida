@@ -275,8 +275,6 @@ bool TSS_project::confirmUnsavedChanges() {
 
             clearSelection();      
 
-            
-
             return true;
         }
         else {

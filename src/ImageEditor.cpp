@@ -74,7 +74,7 @@ QString ImageEditor::applyColorEdits(QImage& src) {
             }
 
             if (styleFilter == 2) {
-                //serpia
+                //serpia: warm brown+gold filter 
 
                 int rS = 0.393 * r + 0.769 * g + 0.189 * b;
                 int gS = 0.349 * r + 0.686 * g + 0.168 * b;
@@ -86,7 +86,29 @@ QString ImageEditor::applyColorEdits(QImage& src) {
             }
 
             if (styleFilter == 3) {
-                //pastel
+                // pastel: softer saturation + slight lift to white + gentle contrast compression
+                double Y = 0.299 * r + 0.587 * g + 0.114 * b;
+
+                double kSatPastel = 0.60;
+                double rP= Y + (r - Y) * kSatPastel;
+                double gP = Y + (g - Y) * kSatPastel;
+                double bP = Y + (b - Y) * kSatPastel;
+
+                // 82% of existet channel value + 18% more of white color
+                double kWhite = 0.18; 
+                rP = rP * (1.0 - kWhite) + 255.0 * kWhite;
+                gP = gP * (1.0 - kWhite) + 255.0 * kWhite;
+                bP = bP * (1.0 - kWhite) + 255.0 * kWhite;
+
+                double kC = 0.90; // <1 reduces contrast
+                rP = (rP - 128.0) * kC + 128.0;
+                gP = (gP - 128.0) * kC + 128.0;
+                bP = (bP - 128.0) * kC + 128.0;
+
+                r = toFitChannelRange((int)std::lround(rP));
+                g = toFitChannelRange((int)std::lround(gP));
+                b = toFitChannelRange((int)std::lround(bP));
+
             }
 
             if (styleFilter == 4) {
