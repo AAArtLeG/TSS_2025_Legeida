@@ -102,6 +102,7 @@ private slots:
     void on_vintageBtn_toggled(bool checked);
     void on_negativeBtn_toggled(bool checked);
     void on_watermarkBtn_clicked();
+    void on_opacityWM_valueChanged(double value);
     void on_offWatermarkBtn_clicked();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();

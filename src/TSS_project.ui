@@ -85,145 +85,15 @@
      <rect>
       <x>10</x>
       <y>20</y>
-      <width>181</width>
+      <width>176</width>
       <height>541</height>
      </rect>
     </property>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="3">
-      <widget class="QPushButton" name="undoCropBtn">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
-       <property name="text">
-        <string>Undo Crops</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Brightness</string>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="1">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Watermark:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="3">
-      <widget class="QPushButton" name="negativeBtn">
-       <property name="text">
-        <string>Apply</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="1">
-      <widget class="QPushButton" name="minusSaturationBtn">
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="10" column="1">
-      <widget class="QLabel" name="label_7">
-       <property name="text">
-        <string>Color Filters</string>
-       </property>
-      </widget>
-     </item>
      <item row="3" column="3">
       <widget class="QPushButton" name="rightRotation">
        <property name="text">
         <string>-&gt;</string>
-       </property>
-      </widget>
-     </item>
-     <item row="14" column="3">
-      <widget class="QLabel" name="watermarkStatus">
-       <property name="text">
-        <string>Not selected</string>
-       </property>
-      </widget>
-     </item>
-     <item row="9" column="3">
-      <widget class="QPushButton" name="plusSaturationBtn">
-       <property name="text">
-        <string>+</string>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="3">
-      <widget class="QPushButton" name="plusBrightnessBtn">
-       <property name="text">
-        <string>+</string>
-       </property>
-      </widget>
-     </item>
-     <item row="13" column="1">
-      <widget class="QLabel" name="label_8">
-       <property name="text">
-        <string>Negativ:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="1">
-      <widget class="QPushButton" name="minusContrastBtn">
-       <property name="text">
-        <string>-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="12" column="3">
-      <widget class="QPushButton" name="vintageBtn">
-       <property name="text">
-        <string>Vintage</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Rotate</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="3">
-      <widget class="QPushButton" name="sepiaBtn">
-       <property name="text">
-        <string>Sepia</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item row="6" column="1">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>Contrast</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QPushButton" name="cropBtn">
-       <property name="enabled">
-        <bool>true</bool>
-       </property>
-       <property name="text">
-        <string>Crop</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -244,17 +114,41 @@
        </property>
       </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QPushButton" name="minusBrightnessBtn">
+     <item row="9" column="1">
+      <widget class="QPushButton" name="minusSaturationBtn">
        <property name="text">
         <string>-</string>
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
-      <widget class="QLabel" name="label_6">
+     <item row="13" column="3">
+      <widget class="QPushButton" name="negativeBtn">
        <property name="text">
-        <string>Saturation</string>
+        <string>Apply</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Brightness</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label">
+       <property name="text">
+        <string>Rotate</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QPushButton" name="leftRotation">
+       <property name="text">
+        <string>&lt;-</string>
        </property>
       </widget>
      </item>
@@ -268,20 +162,27 @@
        </property>
       </widget>
      </item>
-     <item row="3" column="1">
-      <widget class="QPushButton" name="leftRotation">
+     <item row="11" column="3">
+      <widget class="QPushButton" name="sepiaBtn">
        <property name="text">
-        <string>&lt;-</string>
-       </property>
-      </widget>
-     </item>
-     <item row="11" column="1">
-      <widget class="QPushButton" name="monochromeBtn">
-       <property name="text">
-        <string>Monochrome</string>
+        <string>Sepia</string>
        </property>
        <property name="checkable">
         <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="15" column="3">
+      <widget class="QPushButton" name="offWatermarkBtn">
+       <property name="text">
+        <string>Off</string>
+       </property>
+      </widget>
+     </item>
+     <item row="15" column="1">
+      <widget class="QPushButton" name="watermarkBtn">
+       <property name="text">
+        <string>Apply </string>
        </property>
       </widget>
      </item>
@@ -295,17 +196,122 @@
        </property>
       </widget>
      </item>
-     <item row="15" column="1">
-      <widget class="QPushButton" name="watermarkBtn">
+     <item row="5" column="1">
+      <widget class="QPushButton" name="minusBrightnessBtn">
        <property name="text">
-        <string>Apply </string>
+        <string>-</string>
        </property>
       </widget>
      </item>
-     <item row="15" column="3">
-      <widget class="QPushButton" name="offWatermarkBtn">
+     <item row="13" column="1">
+      <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Off</string>
+        <string>Negativ:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="12" column="3">
+      <widget class="QPushButton" name="vintageBtn">
+       <property name="text">
+        <string>Vintage</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="undoCropBtn">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Undo Crops</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QLabel" name="label_6">
+       <property name="text">
+        <string>Saturation</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="3">
+      <widget class="QPushButton" name="plusSaturationBtn">
+       <property name="text">
+        <string>+</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QPushButton" name="minusContrastBtn">
+       <property name="text">
+        <string>-</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
+      <widget class="QPushButton" name="monochromeBtn">
+       <property name="text">
+        <string>Monochrome</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="3">
+      <widget class="QPushButton" name="plusBrightnessBtn">
+       <property name="text">
+        <string>+</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QPushButton" name="cropBtn">
+       <property name="enabled">
+        <bool>true</bool>
+       </property>
+       <property name="text">
+        <string>Crop</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="1">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Watermark:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="10" column="1">
+      <widget class="QLabel" name="label_7">
+       <property name="text">
+        <string>Color Filters</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>Contrast</string>
+       </property>
+      </widget>
+     </item>
+     <item row="14" column="3">
+      <widget class="QDoubleSpinBox" name="opacityWM">
+       <property name="maximum">
+        <double>1.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.350000000000000</double>
        </property>
       </widget>
      </item>

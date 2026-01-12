@@ -36,10 +36,12 @@ public:
 	QString offWatermark(QImage& src);
 	bool setWatermark(QImage& watermarkSrc);
 	bool setWatermarkPos(int pos);
-	QString applyWatermark(QImage& src);
+	QString applyWatermark(QImage& src, double opacity);
 private:
 	QImage rotateLeft(QImage& src);
 	QImage rotateRight(QImage& src);
+
+	QString applyWatermarkLayer(QImage& src);
 	QString applyColorEdits(QImage& src);
 
 	int toFitChannelRange(int channelValue);
@@ -64,4 +66,5 @@ private:
 	QImage watermarkBase;
 	bool isWatermarkApplied = false;
 	int watermarkPos = 0;
+	double watermarkOpacity = 0.35;
 };

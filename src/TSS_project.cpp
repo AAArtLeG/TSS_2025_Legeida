@@ -221,6 +221,7 @@ void TSS_project::clearSelection() {
     ui->negativeBtn->setChecked(false);
     ui->negativeBtn->blockSignals(false);
 
+    ui->opacityWM->setEnabled(true);
     ui->watermarkBtn->setEnabled(true);
     ui->offWatermarkBtn->setEnabled(true);
 }
@@ -1060,8 +1061,9 @@ void TSS_project::on_cropBtn_toggled(bool checked) {
     ui->sepiaBtn->setEnabled(false);
     ui->negativeBtn->setEnabled(false);
 
-    ui->watermarkBtn->setEnabled(true);
-    ui->offWatermarkBtn->setEnabled(true);
+    ui->opacityWM->setEnabled(false);
+    ui->watermarkBtn->setEnabled(false);
+    ui->offWatermarkBtn->setEnabled(false);
 }
 
 void TSS_project::on_leftRotation_clicked() {
@@ -1522,7 +1524,12 @@ void TSS_project::on_watermarkBtn_clicked() {
             return;
         }
 
-        msg = editor.applyWatermark(currentImage);
+        if (!isEditing) {
+            isEditing = true;
+            currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+        }
+
+        msg = editor.applyWatermark(currentImage, ui->opacityWM->value());
     }
     else if (box.clickedButton() == btnSelectNewWatermark) {
         QString wmPath = QFileDialog::getOpenFileName(
@@ -1558,11 +1565,31 @@ void TSS_project::on_watermarkBtn_clicked() {
             currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
         }
 
-        msg = editor.applyWatermark(currentImage);
+        msg = editor.applyWatermark(currentImage, ui->opacityWM->value());
     }
     else {
         return;
     }
+
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
+}
+
+void TSS_project::on_opacityWM_valueChanged(double value)
+{
+    if (!editor.watermarkStatus())
+        return;
+
+    QString msg = editor.applyWatermark(currentImage, value);
 
     if (!msg.isNull()) {
         statusBar()->showMessage(msg, 2000);

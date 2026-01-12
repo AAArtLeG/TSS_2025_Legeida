@@ -23,6 +23,103 @@ double ImageEditor::applyGamma(double c, double gamma) {
     return std::pow(cN, gamma) * 255.0;
 }
 
+QString ImageEditor::applyWatermarkLayer(QImage& src) {
+    if (!isWatermarkApplied) 
+        return QString();
+    
+    if (src.isNull()) 
+        return "Current image is null";
+
+    if (watermarkBase.isNull()) 
+        return "Watermark image is null";
+
+    if (src.format() != QImage::Format_ARGB32)
+        src = src.convertToFormat(QImage::Format_ARGB32);
+
+    int w = src.width();
+    int h = src.height();
+    double totalS = double(w) * double(h);
+    if (totalS <= 0.0)
+        return "WARNING: Image size is 0, colore dits cant be applied";
+
+    int watermarkW = std::max(1, int(w * 0.25));
+    int watermarkH = std::max(1, int(h * 0.25));
+    QImage wM = watermarkBase.scaled(watermarkW, watermarkH, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    if (wM.isNull()) 
+        return "Failed to scale watermark";
+
+    watermarkW = wM.width();
+    watermarkH = wM.height();
+
+    // padding from image borders, cant be smaller that 8 px
+    int padding = std::max(8, int(std::min(w, h) * 0.02));
+
+    int x0;
+    int y0;
+    
+    if (watermarkPos == 0) { // right bottom
+        x0 = w - watermarkW - padding;
+        y0 = h - watermarkH - padding;
+    }
+    else if (watermarkPos == 1) { // left bottom
+        x0 = padding;
+        y0 = h - watermarkH - padding;
+    }
+    else if (watermarkPos == 2) { // left top
+        x0 = padding;
+        y0 = padding;
+    }
+    else if (watermarkPos == 3) { // right top
+        x0 = w - watermarkW - padding;
+        y0 = padding;
+    }
+
+    // защита от выхода за границы
+    if (x0 < 0) 
+        x0 = 0;
+    if (y0 < 0) 
+        y0 = 0;
+    if (x0 + watermarkW > w) 
+        x0 = std::max(0, w - watermarkW);
+    if (y0 + watermarkH > h) 
+        y0 = std::max(0, h - watermarkH);
+
+    // 4) смешивание (wm поверх img)
+    for (int y = 0; y < watermarkH; ++y) {
+        QRgb* srcRow = reinterpret_cast<QRgb*>(src.scanLine(y0 + y));
+        QRgb* wMRow = reinterpret_cast<QRgb*>(wM.scanLine(y));
+
+        for (int x = 0; x < watermarkW; ++x) {
+            QRgb wMPix = wMRow[x];
+
+            //if opasity is 0 -> no need to set this pix of watermark on src
+            int wMAlpha0 = qAlpha(wMPix);
+            if (wMAlpha0 == 0)
+                continue;
+
+            // rescaled wM opacity -> firsty transform its base opasity to intreval [0;1], and multiply by the required opacity
+            double wMAlphaC = (wMAlpha0 / 255.0) * watermarkOpacity; 
+                if (wMAlphaC <= 0.0) continue;
+
+            int srcX = x0 + x;
+            QRgb srcPix = srcRow[srcX];
+
+            //linear combination beetween src pix and wM pix
+            const int r = (int)std::lround(qRed(wMPix) * wMAlphaC + qRed(srcPix) * (1.0 - wMAlphaC));
+            const int g = (int)std::lround(qGreen(wMPix) * wMAlphaC + qGreen(srcPix) * (1.0 - wMAlphaC));
+            const int b = (int)std::lround(qBlue(wMPix) * wMAlphaC + qBlue(srcPix) * (1.0 - wMAlphaC));
+
+            // оставляем альфу базового изображения (обычно 255)
+            srcRow[srcX] = qRgba(toFitChannelRange(r),
+                toFitChannelRange(g),
+                toFitChannelRange(b),
+                qAlpha(srcPix));
+        }
+    }
+
+    return QString();
+}
+
 QString ImageEditor::applyColorEdits(QImage& src) {
     if (forColorEditsBase.isNull())
         return "WARNING: Base image is null; cannot apply color edits";
@@ -93,8 +190,8 @@ QString ImageEditor::applyColorEdits(QImage& src) {
                 int bS = 0.272 * r + 0.534 * g + 0.131 * b;
 
                 r = toFitChannelRange((int)std::lround(rS));
-                g = toFitChannelRange((int)std::lround(bS));
-                b = toFitChannelRange((int)std::lround(gS));
+                g = toFitChannelRange((int)std::lround(gS));
+                b = toFitChannelRange((int)std::lround(bS));
             }
 
             if (styleFilter == 3) {
@@ -194,6 +291,15 @@ QString ImageEditor::applyColorEdits(QImage& src) {
         //statusBar()->showMessage(("WARNING (too many pixels on \"border\") : " + msg), 2000);
     }
 
+    //appling watermark
+    if (isWatermarkApplied && !watermarkBase.isNull()) {
+        QString wmMsg = applyWatermarkLayer(img);
+        if (!wmMsg.isNull()) {
+            if (!msg.isEmpty()) msg += " | ";
+            msg += wmMsg;
+        }
+    }
+
     if (!img.isNull())
         src = img;
 
@@ -265,6 +371,8 @@ QString ImageEditor::crop(const QRectF& rect, QImage& src, QGraphicsPixmapItem* 
 
     forColorEditsBase = forColorEditsBase.copy(cropPx);
 
+    applyColorEdits(src);
+
     return msg;
 }
 
@@ -331,6 +439,8 @@ QImage ImageEditor::rotate(bool isLeft, QImage& img) {
         if (!forColorEditsBase.isNull())
             forColorEditsBase = rotateRight(forColorEditsBase);
     }
+
+    applyColorEdits(dst);
 
     return dst;
 }
@@ -555,7 +665,7 @@ bool ImageEditor::setWatermarkPos(int pos) {
         return true;
 }
 
-QString ImageEditor::applyWatermark(QImage& src) {
+QString ImageEditor::applyWatermark(QImage& src, double opacity) {
     if (src.isNull()) 
         return "Current image is null";
     if (watermarkBase.isNull()) 
@@ -572,6 +682,8 @@ QString ImageEditor::applyWatermark(QImage& src) {
     }
 
     isWatermarkApplied = true;
+
+    watermarkOpacity = opacity;
 
     QString msg = applyColorEdits(src);
 
