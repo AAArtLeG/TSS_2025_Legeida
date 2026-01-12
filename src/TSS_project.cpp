@@ -259,10 +259,6 @@ bool TSS_project::confirmUnsavedChanges() {
                 return false;
             }
 
-            if (isFolderOpenned && !actualDirPath.isEmpty()) {
-                originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
-            }
-
             //isEditing = false;
             //scanFolderOnce(actualDirPath);
 
@@ -333,7 +329,15 @@ void TSS_project::on_actionOpen_triggered()
     ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
 }
 
-void TSS_project::on_actionSaveAs_triggered()
+void TSS_project::on_actionSave_triggered()
+{
+    if (!saveCurrentImage()) {
+        std::cout << "Error during saving";
+        return;
+    }
+}
+
+void TSS_project::on_actionSave_As_2_triggered()
 {
     if (!saveCurrentImageAs()) {
         std::cout << "Error during saving";
@@ -380,6 +384,11 @@ bool TSS_project::saveCurrentImageAs() {
     isEditing = false;
     currentImgPath = fileName;
     currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+
+    if (isFolderOpenned && !actualDirPath.isEmpty()) {
+        originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+    }
+
     return true;
 }
 
@@ -1018,6 +1027,10 @@ void TSS_project::endCrop() {
     ui->vintageBtn->setEnabled(true);
     ui->sepiaBtn->setEnabled(true);
     ui->negativeBtn->setEnabled(true);
+
+    ui->opacityWM->setEnabled(true);
+    ui->watermarkBtn->setEnabled(true);
+    ui->offWatermarkBtn->setEnabled(true);
 }
 
 void TSS_project::on_cropBtn_toggled(bool checked) {
@@ -1682,4 +1695,64 @@ void TSS_project::on_buttonBack_clicked() {
         clearSelection();
         showPage();
     }
+}
+
+void TSS_project::on_disacrdChangesBtn_clicked() {
+    if (currentImage.isNull()) {
+        return;
+    }
+
+    if (!isEditing)   
+        return;
+
+    if (!currentImageOrigin.isNull())
+        currentImage = currentImageOrigin.copy();
+
+    isEditing = false;
+    endCrop();
+    editor.cleanEditor();
+
+    ui->comboBoxRating->blockSignals(true);
+    ui->comboBoxTag->blockSignals(true);
+
+    ui->comboBoxRating->setCurrentIndex(0);
+    ui->comboBoxTag->setCurrentIndex(0);
+
+    ui->comboBoxRating->setEnabled(false);
+    ui->comboBoxTag->setEnabled(false);
+
+    ui->comboBoxRating->blockSignals(false);
+    ui->comboBoxTag->blockSignals(false);
+
+    ui->pastelBtn->setEnabled(true);
+    ui->monochromeBtn->setEnabled(true);
+    ui->vintageBtn->setEnabled(true);
+    ui->sepiaBtn->setEnabled(true);
+    ui->negativeBtn->setEnabled(true);
+
+    ui->pastelBtn->blockSignals(true);
+    ui->pastelBtn->setChecked(false);
+    ui->pastelBtn->blockSignals(false);
+
+    ui->monochromeBtn->blockSignals(true);
+    ui->monochromeBtn->setChecked(false);
+    ui->monochromeBtn->blockSignals(false);
+
+    ui->vintageBtn->blockSignals(true);
+    ui->vintageBtn->setChecked(false);
+    ui->vintageBtn->blockSignals(false);
+
+    ui->sepiaBtn->blockSignals(true);
+    ui->sepiaBtn->setChecked(false);
+    ui->sepiaBtn->blockSignals(false);
+
+    ui->negativeBtn->blockSignals(true);
+    ui->negativeBtn->setChecked(false);
+    ui->negativeBtn->blockSignals(false);
+
+    ui->opacityWM->setEnabled(true);
+    ui->watermarkBtn->setEnabled(true);
+    ui->offWatermarkBtn->setEnabled(true);
+
+    displayImage(currentImage);
 }

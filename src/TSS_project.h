@@ -79,7 +79,8 @@ private:
 private slots:
     //fileDialogFunctions 
     void on_actionOpen_triggered();
-    void on_actionSaveAs_triggered();
+    void on_actionSave_triggered();
+    void on_actionSave_As_2_triggered();
     void on_actionOpen_folder_triggered();
     void on_comboSelectNumOfImgs_currentIndexChanged();
     void on_comboBoxRating_currentIndexChanged();
@@ -107,4 +108,5 @@ private slots:
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();
+    void on_disacrdChangesBtn_clicked();
 }; 
