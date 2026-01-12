@@ -22,13 +22,21 @@ public:
 	QString changeBrightness(int delta, QImage& src);
 	QString changeContrast(int delta, QImage& src);
 	QString changeSaturation(int delta, QImage& src);
+
 	QString applyMonochromeFilter(QImage& src);
 	QString applySepiaFilter(QImage& src);
 	QString applyPastelFilter(QImage& src);
 	QString applyVintageFilter(QImage& src);
-	QString applyNegative(QImage& src);
-	QString cleanStyleEditor(QImage& src);
+	
 	QString offNegative(QImage& src);
+	QString cleanStyleEditor(QImage& src);
+	QString applyNegative(QImage& src);
+
+	bool watermarkStatus();
+	QString offWatermark(QImage& src);
+	bool setWatermark(QImage& watermarkSrc);
+	bool setWatermarkPos(int pos);
+	QString applyWatermark(QImage& src);
 private:
 	QImage rotateLeft(QImage& src);
 	QImage rotateRight(QImage& src);
@@ -52,4 +60,8 @@ private:
 
 	unsigned int styleFilter = 0;
 	bool isNegative = false;
+
+	QImage watermarkBase;
+	bool isWatermarkApplied = false;
+	int watermarkPos = 0;
 };

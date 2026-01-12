@@ -9,6 +9,9 @@ void ImageEditor::cleanEditor() {
 
     styleFilter = 0;
     isNegative = false;
+
+    isWatermarkApplied = false;
+    watermarkPos = 0;
 }
 
 double ImageEditor::applyGamma(double c, double gamma) {
@@ -515,3 +518,63 @@ QString ImageEditor::offNegative(QImage& src) {
     isNegative = false;
     return applyColorEdits(src);
 }
+
+bool ImageEditor::watermarkStatus() {
+    return isWatermarkApplied;
+}
+
+QString ImageEditor::offWatermark(QImage& src) {
+    if (isWatermarkApplied) {
+        isWatermarkApplied = false;
+    }
+
+    if (forColorEditsBase.isNull())
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
+}
+
+bool ImageEditor::setWatermark(QImage& watermarkSrc) {
+    watermarkBase = watermarkSrc.convertToFormat(QImage::Format_ARGB32);
+    if (watermarkBase.isNull())
+        return false;
+    else
+        return true;
+}
+
+bool ImageEditor::setWatermarkPos(int pos) {
+    watermarkPos = pos;
+
+    if (watermarkPos < 0 || watermarkPos > 3){
+        watermarkPos = 0;
+        return false;
+    }
+    else
+        return true;
+}
+
+QString ImageEditor::applyWatermark(QImage& src) {
+    if (src.isNull()) 
+        return "Current image is null";
+    if (watermarkBase.isNull()) 
+        return "Watermark image save was unsuccessful";
+
+    if (forColorEditsBase.isNull()) {
+        forColorEditsBase = src.convertToFormat(QImage::Format_ARGB32);
+        brightnessСhange = 0;
+        contrastСhange = 0;
+        saturationСhange = 0;
+
+        styleFilter = 0;
+        isNegative = false;
+    }
+
+    isWatermarkApplied = true;
+
+    QString msg = applyColorEdits(src);
+
+    return msg;
+}
+

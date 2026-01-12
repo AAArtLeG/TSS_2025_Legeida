@@ -46,6 +46,9 @@ private:
     QRect cropRectFromView;
     void endCrop();
 
+    bool isWatermarkSelected = false;
+    bool confirmWatermarkPos();
+
     QVector<DataStorage> dataBase;
     MetaDataStorage metaData;
     QVector<DataStorage> originDataBase;
@@ -98,6 +101,8 @@ private slots:
     void on_pastelBtn_toggled(bool checked);
     void on_vintageBtn_toggled(bool checked);
     void on_negativeBtn_toggled(bool checked);
+    void on_watermarkBtn_clicked();
+    void on_offWatermarkBtn_clicked();
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();

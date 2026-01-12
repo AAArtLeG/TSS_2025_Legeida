@@ -220,6 +220,9 @@ void TSS_project::clearSelection() {
     ui->negativeBtn->blockSignals(true);
     ui->negativeBtn->setChecked(false);
     ui->negativeBtn->blockSignals(false);
+
+    ui->watermarkBtn->setEnabled(true);
+    ui->offWatermarkBtn->setEnabled(true);
 }
 
 bool TSS_project::confirmUnsavedChanges() {
@@ -1056,6 +1059,9 @@ void TSS_project::on_cropBtn_toggled(bool checked) {
     ui->vintageBtn->setEnabled(false);
     ui->sepiaBtn->setEnabled(false);
     ui->negativeBtn->setEnabled(false);
+
+    ui->watermarkBtn->setEnabled(true);
+    ui->offWatermarkBtn->setEnabled(true);
 }
 
 void TSS_project::on_leftRotation_clicked() {
@@ -1429,6 +1435,162 @@ void TSS_project::on_negativeBtn_toggled(bool checked) {
     }
 
     editor.applyNegative(currentImage);
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
+}
+
+bool TSS_project::confirmWatermarkPos() {
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(tr("Select watermark"));
+    box.setText(tr("In which corner set watermark?"));
+
+    QPushButton* btnRBC = box.addButton(tr("Right bottom corner"), QMessageBox::AcceptRole);
+    QPushButton* btnLBC = box.addButton(tr("Left bottom corner"), QMessageBox::ActionRole);
+    QPushButton* btnLTC = box.addButton(tr("Left top corner"), QMessageBox::ActionRole);
+    QPushButton* btnRTC = box.addButton(tr("Right top corner"), QMessageBox::ActionRole);
+    QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+    box.setDefaultButton(btnRBC);
+
+    box.exec();
+    unsigned int pos = 0;
+    if (box.clickedButton() == btnRBC) {
+        if (!editor.setWatermarkPos(pos))
+            return false;
+
+        return true;
+    }
+    else if (box.clickedButton() == btnLBC) {
+        pos = 1;
+        if (!editor.setWatermarkPos(pos))
+            return false;
+
+        return true;
+    }
+    else if (box.clickedButton() == btnLTC) {
+        pos = 2;
+        if (!editor.setWatermarkPos(pos))
+            return false;
+
+        return true;
+    }
+    else if (box.clickedButton() == btnRTC) {
+        pos = 3;
+        if (!editor.setWatermarkPos(pos))
+            return false;
+
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+void TSS_project::on_watermarkBtn_clicked() {
+    if (currentImage.isNull())
+        return;
+
+    QMessageBox box(this);
+    box.setIcon(QMessageBox::Question);
+    box.setWindowTitle(tr("Which watermark do you want to apply?"));
+    box.setText(tr("Which watermark do you want to apply? Select the new one or apply existed (if WM has already been apllied)?"));
+
+    QPushButton* btnApplySelected = box.addButton(tr("Apply selected"), QMessageBox::AcceptRole);
+    QPushButton* btnSelectNewWatermark = box.addButton(tr("Select new"), QMessageBox::ActionRole);
+    QPushButton* btnCancel = box.addButton(tr("Cancel"), QMessageBox::RejectRole);
+
+    if (isWatermarkSelected) {
+        box.setDefaultButton(btnApplySelected);
+    }
+    else {
+        btnApplySelected->setEnabled(false);
+        box.setDefaultButton(btnSelectNewWatermark);
+    }
+    
+
+    box.exec();
+
+    QString msg = QString();
+
+    if (box.clickedButton() == btnApplySelected) {
+        if (!confirmWatermarkPos()) {
+            statusBar()->showMessage("Error during setting position of watermark", 2000);
+            return;
+        }
+
+        msg = editor.applyWatermark(currentImage);
+    }
+    else if (box.clickedButton() == btnSelectNewWatermark) {
+        QString wmPath = QFileDialog::getOpenFileName(
+            this,
+            tr("Select watermark image"),
+            QString(),
+            tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)")
+        );
+
+        if (wmPath.isEmpty())
+            return;
+
+        QImage wm(wmPath);
+        if (wm.isNull()) {
+            QMessageBox::warning(this, tr("Watermark"), tr("Could not load watermark image."));
+            return;
+        }
+
+        if (!editor.setWatermark(wm)) {
+            statusBar()->showMessage("Error during load the watermark iamge.", 2000);
+            return;
+        }
+
+        isWatermarkSelected = true;
+
+        if (!confirmWatermarkPos()) {
+            statusBar()->showMessage("Error during setting position of watermark", 2000);
+            return;
+        }
+           
+        if (!isEditing) {
+            isEditing = true;
+            currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+        }
+
+        msg = editor.applyWatermark(currentImage);
+    }
+    else {
+        return;
+    }
+
+    if (!msg.isNull()) {
+        statusBar()->showMessage(msg, 2000);
+    }
+    else {
+        statusBar()->clearMessage();
+    }
+
+    if (!currentImage.isNull()) {
+        isImgWasReturnToOrigin(currentImage);
+        displayImage(currentImage);
+    }
+}
+
+void TSS_project::on_offWatermarkBtn_clicked() {
+    if (currentImage.isNull())
+        return;
+
+    if (!editor.watermarkStatus()) {
+        return;
+    }
+
+    if (!isEditing) {
+        isEditing = true;
+        currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
+    }
+
+    editor.offWatermark(currentImage);
 
     if (!currentImage.isNull()) {
         isImgWasReturnToOrigin(currentImage);
