@@ -11,6 +11,15 @@ void ImageEditor::cleanEditor() {
     isNegative = false;
 }
 
+double ImageEditor::applyGamma(double c, double gamma) {
+    double cN = c / 255.0;
+    if (cN < 0.0) 
+        cN = 0.0;
+    if (cN > 1.0) 
+        cN = 1.0;
+    return std::pow(cN, gamma) * 255.0;
+}
+
 QString ImageEditor::applyColorEdits(QImage& src) {
     if (forColorEditsBase.isNull())
         return "WARNING: Base image is null; cannot apply color edits";
@@ -86,7 +95,7 @@ QString ImageEditor::applyColorEdits(QImage& src) {
             }
 
             if (styleFilter == 3) {
-                // pastel: softer saturation + slight lift to white + gentle contrast compression
+                // pastel: softer saturation + slight lift to white + small contrast compression
                 double Y = 0.299 * r + 0.587 * g + 0.114 * b;
 
                 double kSatPastel = 0.60;
@@ -112,7 +121,45 @@ QString ImageEditor::applyColorEdits(QImage& src) {
             }
 
             if (styleFilter == 4) {
-                //vintage
+                //vintage: desatur a bit + warm tint(odtien) + lifted shadows (faded blacks(vyblednutie)) + gentle contrast + do corners darkner, center without changes
+
+                double Y = 0.299 * r + 0.587 * g + 0.114 * b;
+                double kSatV = 0.75; 
+                double rV = Y + (r - Y) * kSatV;
+                double gV = Y + (g - Y) * kSatV;
+                double bV = Y + (b - Y) * kSatV;
+
+                rV = rV * 1.05 + 8.0;   
+                gV = gV * 1.02 + 4.0;
+                bV = bV * 0.93 - 6.0;   
+
+                //when gamma < 1 lifts -> shadows and midtones
+                //because we rescaled chan value to [0,1] and than pow(x, gamma) -> chan values which was small (in range from 0 to 255) - shadows -> become lighter
+                //but big values (in range from 0 to 255) -> very slightly changed
+                double gamma = 0.85; 
+                rV = applyGamma(rV, gamma);
+                gV = applyGamma(gV, gamma);
+                bV = applyGamma(bV, gamma);
+
+                // do corners darkner, center without changes
+
+                //center coor
+                double cx = (w - 1) * 0.5;
+                double cy = (h - 1) * 0.5;
+                //distance normalized around center (0 in center, 1 on borders, 2 in corners)
+                double dx = (x - cx) / cx;
+                double dy = (y - cy) / cy;
+                double d2 = dx * dx + dy * dy;     
+
+                double vig = 1.0 - 0.18 * d2;         
+                if (vig < 0.0) vig = 0.0;
+
+                //equal decrease -> no color change -> only brightness
+                rV *= vig; gV *= vig; bV *= vig;
+
+                r = toFitChannelRange((int)std::lround(rV));
+                g = toFitChannelRange((int)std::lround(gV));
+                b = toFitChannelRange((int)std::lround(bV));
             }
 
             if (isNegative) {

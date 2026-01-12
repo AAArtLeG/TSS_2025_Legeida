@@ -199,6 +199,7 @@ void TSS_project::clearSelection() {
     ui->monochromeBtn->setEnabled(true);
     ui->vintageBtn->setEnabled(true);
     ui->sepiaBtn->setEnabled(true);
+    ui->negativeBtn->setEnabled(true);
 
     ui->pastelBtn->blockSignals(true);
     ui->pastelBtn->setChecked(false);
@@ -1007,6 +1008,12 @@ void TSS_project::endCrop() {
     ui->plusContrastBtn->setEnabled(true);
     ui->minusSaturationBtn->setEnabled(true);
     ui->plusSaturationBtn->setEnabled(true);
+
+    ui->pastelBtn->setEnabled(true);
+    ui->monochromeBtn->setEnabled(true);
+    ui->vintageBtn->setEnabled(true);
+    ui->sepiaBtn->setEnabled(true);
+    ui->negativeBtn->setEnabled(true);
 }
 
 void TSS_project::on_cropBtn_toggled(bool checked) {
@@ -1043,6 +1050,12 @@ void TSS_project::on_cropBtn_toggled(bool checked) {
     ui->plusContrastBtn->setEnabled(false);
     ui->minusSaturationBtn->setEnabled(false);
     ui->plusSaturationBtn->setEnabled(false);
+
+    ui->pastelBtn->setEnabled(false);
+    ui->monochromeBtn->setEnabled(false);
+    ui->vintageBtn->setEnabled(false);
+    ui->sepiaBtn->setEnabled(false);
+    ui->negativeBtn->setEnabled(false);
 }
 
 void TSS_project::on_leftRotation_clicked() {

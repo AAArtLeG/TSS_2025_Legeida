@@ -16,6 +16,8 @@ public:
 	QString crop(const QRectF& rect, QImage& src, QGraphicsPixmapItem* item);
 	void endCrop();
 
+	double applyGamma(double c, double gamma);
+
 	QImage rotate(bool isLeft, QImage& img);
 	QString changeBrightness(int delta, QImage& src);
 	QString changeContrast(int delta, QImage& src);
