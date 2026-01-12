@@ -164,6 +164,10 @@ QString ImageEditor::applyColorEdits(QImage& src) {
 
             if (isNegative) {
                 //negative
+
+                r = 255 - r;
+                g = 255 - g;
+                b = 255 - b;
             }
 
             row[x] = qRgba(r, g, b, a);
