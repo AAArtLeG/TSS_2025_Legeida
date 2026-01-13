@@ -7,6 +7,10 @@
 #include "DataStorage.h"
 #include "ClickableImgs.h"
 #include "ImageEditor.h"
+#include <QtConcurrent/QtConcurrent>
+#include <QFutureWatcher>
+#include <QProgressBar>
+#include <utility>
 
 class TSS_project : public QMainWindow
 {
@@ -18,6 +22,55 @@ public:
 
 private:
     Ui::TSS_projectClass *ui = nullptr;
+
+    void blockAllUIForProgressBarDuringSF();
+    void unblockAllUIForProgressBarDuringSF();
+
+    // ScanResult = skratka pre log type std::pair<...>
+    using ScanResult = std::pair<QVector<DataStorage>, QVector<DataStorage>>;
+
+    void scanFolderWithProgress(const QString& dir, std::function<void(ScanResult&&)> onDone);
+
+    template <typename WorkFn, typename DoneFn>
+    void runWithBusyBar(const QString& msg, WorkFn&& work, DoneFn&& done)
+    {
+        statusBar()->showMessage(msg);
+        blockAllUIForProgressBarDuringSF();
+        QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+
+        auto* bar = new QProgressBar(this);
+        bar->setTextVisible(false);
+        bar->setRange(0, 0); // Indeterminate progress bar – does not show actual progress
+        statusBar()->addPermanentWidget(bar);
+
+        // type ResultT = type of function that do hard work
+        using ResultT = std::invoke_result_t<WorkFn>;
+
+        auto* watcher = new QFutureWatcher<ResultT>(this);
+
+        // code that i want ot run when fone hard staff ended
+        connect(watcher, &QFutureWatcher<ResultT>::finished, this,
+            [this, watcher, bar, done = std::forward<DoneFn>(done)]() mutable { // mutable -> this, watcher, bar, done = std::forward<DoneFn>(done) ARE NOT const
+
+                // get result of fone work
+                ResultT result = watcher->future().result();
+
+            // delete busy UI
+            statusBar()->removeWidget(bar);
+            bar->deleteLater();
+
+            unblockAllUIForProgressBarDuringSF();
+            statusBar()->clearMessage();
+
+            watcher->deleteLater();
+
+            // pass (call callback for) result of hard staff function 
+            done(std::move(result));
+            });
+
+        //handle for the result of an asynchronous task -> can catch when hard work finish
+        watcher->setFuture(QtConcurrent::run(std::forward<WorkFn>(work)));
+    }
 
     QGraphicsScene* scene = nullptr;
     QGraphicsPixmapItem* item = nullptr;
@@ -108,5 +161,5 @@ private slots:
     void on_buttonLeftScroll_clicked();
     void on_buttonRightScroll_clicked();
     void on_buttonBack_clicked();
-    void on_disacrdChangesBtn_clicked();
+    void on_disacrdChangesBtn_clicked(); 
 }; 

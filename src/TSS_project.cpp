@@ -13,6 +13,10 @@
 #include <QRubberBand>
 #include <QScrollBar>
 #include <iostream>
+#include <QtConcurrent/QtConcurrent>
+#include <QFutureWatcher>
+#include <QProgressBar>
+#include <utility>
 
 TSS_project::TSS_project(QWidget *parent)
     : QMainWindow(parent),
@@ -386,7 +390,37 @@ bool TSS_project::saveCurrentImageAs() {
     currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
 
     if (isFolderOpenned && !actualDirPath.isEmpty()) {
-        originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
+
+        QString tmpADP = actualDirPath;
+
+        // [this, dir](ScanResult&& r) - mean that lambda [this, dir] will return ScanResult, where && mean "I will give you the result through move, without copying."
+        scanFolderWithProgress(tmpADP, [this, tmpADP](ScanResult&& r) {
+
+            // scan result
+            dataBase = std::move(r.first);
+            originDataBase = std::move(r.second);
+
+
+            if (currentSortIdx == 1) {
+                dataBase = DataStorage::mergeSort(dataBase, "date");
+            }
+
+            if (currentSortIdx == 2) {
+                dataBase = DataStorage::mergeSort(dataBase, "rating");
+            }
+
+            if (currentSortIdx == -1) {
+                filterCurrentIndexChanged("Animal");
+            }
+
+            if (currentSortIdx == -2) {
+                filterCurrentIndexChanged("Landscape");
+            }
+
+            statusBar()->showMessage(tr("Done"), 1500);
+            });
+
+        //originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
     }
 
     return true;
@@ -888,41 +922,157 @@ void TSS_project::filterCurrentIndexChanged(QString tag) {
     showPage();
 }
 
+void TSS_project::blockAllUIForProgressBarDuringSF() {
+    ui->comboBoxRating->setEnabled(false);
+    ui->comboBoxTag->setEnabled(false);
+
+    
+    ui->buttonLeftScroll->setEnabled(false);
+    ui->buttonRightScroll->setEnabled(false);
+    ui->buttonBack->setEnabled(false);
+    ui->disacrdChangesBtn->setEnabled(false);
+    ui->comboSelectNumOfImgs->setEnabled(false); 
+    ui->toolButtonFilter->setEnabled(false);
+
+    ui->pastelBtn->setEnabled(false);
+    ui->monochromeBtn->setEnabled(false);
+    ui->vintageBtn->setEnabled(false);
+    ui->sepiaBtn->setEnabled(false);
+    ui->negativeBtn->setEnabled(false);
+
+    ui->cropBtn->setEnabled(false);
+    ui->undoCropBtn->setEnabled(false);
+    ui->applyCropBtn->setEnabled(false);
+    ui->cancelCropBtn->setEnabled(false);
+
+    ui->leftRotation->setEnabled(false);
+    ui->rightRotation->setEnabled(false);
+
+    ui->minusBrightnessBtn->setEnabled(false);
+    ui->plusBrightnessBtn->setEnabled(false);
+
+    ui->minusContrastBtn->setEnabled(false);
+    ui->plusContrastBtn->setEnabled(false);
+
+    ui->minusSaturationBtn->setEnabled(false);
+    ui->plusSaturationBtn->setEnabled(false);
+
+    ui->opacityWM->setEnabled(false);
+    ui->watermarkBtn->setEnabled(false);
+    ui->offWatermarkBtn->setEnabled(false);
+}
+
+void TSS_project::unblockAllUIForProgressBarDuringSF() {
+    ui->comboBoxRating->setEnabled(true);
+    ui->comboBoxTag->setEnabled(true);
+
+
+    ui->buttonLeftScroll->setEnabled(true);
+    ui->buttonRightScroll->setEnabled(true);
+    ui->buttonBack->setEnabled(true);
+    ui->disacrdChangesBtn->setEnabled(true);
+    ui->comboSelectNumOfImgs->setEnabled(true);
+    ui->toolButtonFilter->setEnabled(true);
+
+    ui->pastelBtn->setEnabled(true);
+    ui->monochromeBtn->setEnabled(true);
+    ui->vintageBtn->setEnabled(true);
+    ui->sepiaBtn->setEnabled(true);
+    ui->negativeBtn->setEnabled(true);
+
+    ui->cropBtn->blockSignals(true);
+    ui->cropBtn->setChecked(false);
+    ui->cropBtn->blockSignals(false);
+    ui->cropBtn->setEnabled(true);
+
+    cropBand->hide();
+    cropRectFromView = QRect();
+
+    ui->applyCropBtn->setEnabled(false);
+    ui->cancelCropBtn->setEnabled(false);
+    ui->undoCropBtn->setEnabled(false);
+
+    ui->leftRotation->setEnabled(true);
+    ui->rightRotation->setEnabled(true);
+
+    ui->minusBrightnessBtn->setEnabled(true);
+    ui->plusBrightnessBtn->setEnabled(true);
+
+    ui->minusContrastBtn->setEnabled(true);
+    ui->plusContrastBtn->setEnabled(true);
+
+    ui->minusSaturationBtn->setEnabled(true);
+    ui->plusSaturationBtn->setEnabled(true);
+
+    ui->opacityWM->setEnabled(true);
+    ui->watermarkBtn->setEnabled(true);
+    ui->offWatermarkBtn->setEnabled(true);
+}
+
+void TSS_project::scanFolderWithProgress(const QString& dir, std::function<void(ScanResult&&)> onDone) {
+    runWithBusyBar(tr("Scanning folder..."),
+        // work (background thread) - background (fonovij) process - WorkFn&& work
+        [this, dir]() -> ScanResult
+        {
+            QVector<DataStorage> tmpDb;
+            QVector<DataStorage> tmpOrigin = DataStorage::scanFolder(dir, tmpDb, metaData);
+            return { std::move(tmpDb), std::move(tmpOrigin) };
+        },
+        // done (UI thread) - DoneFn&& done
+        [onDone = std::move(onDone)](ScanResult result) mutable
+        {
+            onDone(std::move(result));
+        }
+    );
+}
+
 void TSS_project::on_actionOpen_folder_triggered() {
     const QString dir = QFileDialog::getExistingDirectory(this, tr("Select Folder"));
     if (dir.isEmpty()) return;
 
     if (!confirmUnsavedChanges())
         return;
+    // [this, dir](ScanResult&& r) - mean that lambda [this, dir] will return ScanResult, where && mean "I will give you the result through move, without copying."
+    scanFolderWithProgress(dir, [this, dir](ScanResult&& r) {
 
-    actualDirPath = dir;
+        // scan result
+        dataBase = std::move(r.first);
+        originDataBase = std::move(r.second);
 
-    isFolderOpenned = true;
-    originDataBase = DataStorage::scanFolder(dir, dataBase, metaData);
-    //scanFolderOnce(dir);
+        actualDirPath = dir;
+        isFolderOpenned = true;
 
-    if (currentSortIdx == 1) {
-        dataBase = DataStorage::mergeSort(dataBase, "date");
-    }
+        if (currentSortIdx == 1) {
+            dataBase = DataStorage::mergeSort(dataBase, "date");
+        }
 
-    if (currentSortIdx == 2) {
-        dataBase = DataStorage::mergeSort(dataBase, "rating");
-    }
+        if (currentSortIdx == 2) {
+            dataBase = DataStorage::mergeSort(dataBase, "rating");
+        }
 
-    if (currentSortIdx == -1) {
-        filterCurrentIndexChanged("Animal");
-    }
+        if (currentSortIdx == -1) {
+            filterCurrentIndexChanged("Animal");
+        }
 
-    if (currentSortIdx == -2) {
-        filterCurrentIndexChanged("Landscape");
-    }
+        if (currentSortIdx == -2) {
+            filterCurrentIndexChanged("Landscape");
+        }
 
-    checkNumOfImg();
-    buildCurrentPage(0);
+        checkNumOfImg();
+        buildCurrentPage(0);
 
-    clearSelection();
+        clearSelection();
 
-    showPage();
+        showPage();
+
+        checkNumOfImg();
+        buildCurrentPage(0);
+
+        clearSelection();
+        showPage();
+
+        statusBar()->showMessage(tr("Done"), 1500);
+        });
 
     //show first picture
     /*if (!dataBase->isEmpty()) {
