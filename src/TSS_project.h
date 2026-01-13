@@ -107,7 +107,6 @@ private:
     QVector<DataStorage> originDataBase;
     ImageEditor editor;
 
-    int findInOriginByPath(const QString& absPath);
     void resaveToOrigin();
 
     void checkNumOfImg();

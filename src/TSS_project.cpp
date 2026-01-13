@@ -165,17 +165,9 @@ bool TSS_project::eventFilter(QObject* obj, QEvent* ev)
     return QMainWindow::eventFilter(obj, ev);
 }
 
-int TSS_project::findInOriginByPath(const QString& absPath) {
-    for (int i = 0; i < originDataBase.size(); ++i) {
-        if (originDataBase[i].getImgPath() == absPath)
-            return i;
-    }
-    return -1;
-}
-
 void TSS_project::resaveToOrigin() {
     const QString p = currentImgPath;
-    const int oi = findInOriginByPath(p);
+    const int oi = DataStorage::findInOriginByPath(p, originDataBase);
     if (oi < 0) return;
 
     originDataBase[oi].setRating(dataBase[currentImgIdx].getRating());
@@ -389,6 +381,20 @@ bool TSS_project::saveCurrentImageAs() {
     currentImgPath = fileName;
     currentImageOrigin = currentImage.convertToFormat(QImage::Format_ARGB32);
 
+    ui->comboBoxRating->blockSignals(true);
+    ui->comboBoxRating->setCurrentIndex(0);
+    ui->comboBoxRating->blockSignals(false);
+
+    ui->comboBoxTag->blockSignals(true);
+    ui->comboBoxTag->setCurrentIndex(0);
+    ui->comboBoxTag->blockSignals(false);
+
+    if (!isFolderOpenned || actualDirPath.isEmpty()) {
+        currentImgIdx = -1;
+        return true;
+    }
+
+
     if (isFolderOpenned && !actualDirPath.isEmpty()) {
 
         QString tmpADP = actualDirPath;
@@ -400,6 +406,15 @@ bool TSS_project::saveCurrentImageAs() {
             dataBase = std::move(r.first);
             originDataBase = std::move(r.second);
 
+            int oi = DataStorage::findInOriginByPath(currentImgPath, originDataBase);
+            if (oi < 0) {
+                // file not in active folder or its scnfolder
+                currentImgIdx = -1;
+                statusBar()->showMessage(tr("Done"), 1500);
+                return;
+            }
+
+            dataBase = originDataBase;
 
             if (currentSortIdx == 1) {
                 dataBase = DataStorage::mergeSort(dataBase, "date");
@@ -417,7 +432,25 @@ bool TSS_project::saveCurrentImageAs() {
                 filterCurrentIndexChanged("Landscape");
             }
 
-            statusBar()->showMessage(tr("Done"), 1500);
+            int newIdx = -1;
+            for (int i = 0; i < dataBase.size(); ++i) {
+                if (dataBase[i].getImgPath() == currentImgPath) {
+                    newIdx = i;
+                    break;
+                }
+            }
+
+            currentImgIdx = newIdx;
+
+            ui->comboBoxRating->setEnabled(currentImgIdx >= 0);
+            ui->comboBoxTag->setEnabled(currentImgIdx >= 0);
+
+            if (currentImgIdx < 0 && (currentSortIdx == -1 || currentSortIdx == -2)) {
+                statusBar()->showMessage(tr("Saved, but hidden by the current tag filter."), 2500);
+            }
+            else {
+                statusBar()->showMessage(tr("Saved."), 1500);
+            }
             });
 
         //originDataBase = DataStorage::scanFolder(actualDirPath, dataBase, metaData);
@@ -829,7 +862,7 @@ void TSS_project::on_comboBoxTag_currentIndexChanged() {
                 pathToUpdate = pathOfImg;
             }
 
-            int origIdx = findInOriginByPath(pathToUpdate);
+            int origIdx = DataStorage::findInOriginByPath(pathToUpdate, originDataBase);
             if (origIdx >= 0) {
                 originDataBase[origIdx].setTag(tag);
             }

@@ -200,3 +200,11 @@ QVector<DataStorage> DataStorage::filterByTag(QVector<DataStorage>& dataBase, QS
 
     return dataBase;
 }
+
+int DataStorage::findInOriginByPath(const QString& absPath, QVector<DataStorage>& oDataBase) {
+    for (int i = 0; i < oDataBase.size(); ++i) {
+        if (oDataBase[i].getImgPath() == absPath)
+            return i;
+    }
+    return -1;
+}

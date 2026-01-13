@@ -33,6 +33,8 @@ public:
 	static QVector<DataStorage> mergeByRating(QVector<DataStorage>& L, QVector<DataStorage>& R);
 	static QVector<DataStorage> mergeSort(QVector<DataStorage>& dataBase, QString typeOfFilter);
 	static QVector<DataStorage> filterByTag(QVector<DataStorage>& dataBase, QString& typeOfFilter);
+
+	static int findInOriginByPath(const QString& absPath, QVector<DataStorage>& oDataBase);
 private:
 	QString imgPath;
 	QString imgName;
