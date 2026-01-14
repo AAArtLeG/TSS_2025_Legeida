@@ -362,8 +362,8 @@ bool TSS_project::saveCurrentImage() {
 bool TSS_project::saveCurrentImageAs() {
     if (currentImage.isNull()) return false;
 
-    if (currentImgPath.isEmpty())
-        return false;
+    QString prevPath = currentImgPath;
+    int prevIdx = currentImgIdx;
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
     if (fileName.isEmpty()) return false;
@@ -374,7 +374,7 @@ bool TSS_project::saveCurrentImageAs() {
     const bool ok = currentImage.save(fileName);
 
     if (!ok) {
-        QMessageBox::warning(this, tr("Save failed"), tr("Could not save image."));
+        QMessageBox::warning(this, tr("Export failed"), tr("Could not export image."));
         return false;
     }
     isEditing = false;
@@ -400,7 +400,7 @@ bool TSS_project::saveCurrentImageAs() {
         QString tmpADP = actualDirPath;
 
         // [this, dir](ScanResult&& r) - mean that lambda [this, dir] will return ScanResult, where && mean "I will give you the result through move, without copying."
-        scanFolderWithProgress(tmpADP, [this, tmpADP](ScanResult&& r) {
+        scanFolderWithProgress(tmpADP, [this, tmpADP, prevPath, prevIdx](ScanResult&& r) {
 
             // scan result
             dataBase = std::move(r.first);
@@ -408,9 +408,10 @@ bool TSS_project::saveCurrentImageAs() {
 
             int oi = DataStorage::findInOriginByPath(currentImgPath, originDataBase);
             if (oi < 0) {
-                // file not in active folder or its scnfolder
-                currentImgIdx = -1;
-                statusBar()->showMessage(tr("Done"), 1500);
+                currentImgPath = prevPath;
+                currentImgIdx = prevIdx;
+
+                statusBar()->showMessage(tr("Exported (outside the opened folder)."), 2500);
                 return;
             }
 
@@ -480,10 +481,26 @@ void TSS_project::displayImage(const QImage& img) {
     if (img.isNull()) 
         return;
 
-    item = scene->addPixmap(QPixmap::fromImage(img));
+    // automaticly fitable verison
+    /*item = scene->addPixmap(QPixmap::fromImage(img));
     item->setTransformationMode(Qt::SmoothTransformation);
     scene->setSceneRect(item->boundingRect());
-    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);
+    ui->graphicsView->fitInView(item, Qt::KeepAspectRatio);*/
+
+    ui->graphicsView->resetTransform();
+
+    ui->graphicsView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->graphicsView->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+
+    QPixmap pm = QPixmap::fromImage(img);
+    item = scene->addPixmap(pm);
+    item->setTransformationMode(Qt::SmoothTransformation);
+    item->setPos(0, 0);
+
+    scene->setSceneRect(pm.rect());
+
+    ui->graphicsView->horizontalScrollBar()->setValue(0);
+    ui->graphicsView->verticalScrollBar()->setValue(0);
 }
 
 void TSS_project::showImg(const QString& imgPath, const QString& imgName, const int& imgIdx) {
