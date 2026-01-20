@@ -1,4 +1,4 @@
-// REQ-UNIT-ROTATE-LEFT, REQ-UNIT-ROTATE-RIGHT
+// REQ-UNIT-FR-2.2-ROTATE-LEFT, REQ-UNIT-FR-2.2-ROTATE-RIGHT
 
 #include <QtTest/QtTest>
 #include "ImageEditor.h"

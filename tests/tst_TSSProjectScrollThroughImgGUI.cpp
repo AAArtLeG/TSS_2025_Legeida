@@ -1,10 +1,4 @@
-﻿// REQ-GUI-SCROLL tst_TSSProjectScrollThroughImgGUI
-
-// REQ from FinalneZadanie.pdf: 
-
-// Each photo can be displayed in its original resolution after selection from the gallery.If the photo is larger
-// than the display window, the user can scroll the window to
-// see the entire photo.
+﻿// REQ-GUI-FR-1.7 tst_TSSProjectScrollThroughImgGUI
 
 #include <QtTest>
 #include <QGraphicsView>

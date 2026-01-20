@@ -103,7 +103,7 @@ QVector<DataStorage> DataStorage::mergeByDates(QVector<DataStorage>& L, QVector<
     QVector<DataStorage> result;
 
     while (i < L.size() && j < R.size()) {
-        if (L[i].getDateCreated() <= R[j].getDateCreated()) {
+        if (L[i].getDateCreated() >= R[j].getDateCreated()) {
             result.push_back(L[i]);
             i++;
         }
