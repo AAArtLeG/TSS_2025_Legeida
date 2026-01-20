@@ -49,6 +49,7 @@ TSS_project::TSS_project(QWidget *parent)
 
 TSS_project::~TSS_project()
 {
+    metaData.save();
     delete ui;
 }
 

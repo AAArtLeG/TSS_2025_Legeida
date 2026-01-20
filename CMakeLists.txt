@@ -83,3 +83,28 @@ add_custom_command(TARGET tst_ImageEditorRotateUnit
     COMMAND "${Qt6_BIN}/windeployqt.exe" "$<TARGET_FILE:tst_ImageEditorRotateUnit>"
     COMMENT "Win deploy qt (unit test)"
 )
+
+# Integration Test: Persistence of meta data
+
+set(Qt6_BIN "C:/Qt/${Qt6_Version}/msvc2022_64/bin")
+
+add_executable(tst_PersistenceIntegration
+    tests/tst_PersistenceIntegration.cpp
+    src/MetaDataStorage.cpp
+)
+
+target_include_directories(tst_PersistenceIntegration
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(tst_PersistenceIntegration 
+    PRIVATE Qt6::Test Qt6::Core Qt6::Gui Qt6::Widgets
+)
+
+add_test(NAME integration_REQ-NFR2-PERSISTENCE COMMAND tst_PersistenceIntegration)
+
+add_custom_command(TARGET tst_PersistenceIntegration
+    POST_BUILD
+    COMMAND "${Qt6_BIN}/windeployqt.exe" "$<TARGET_FILE:tst_PersistenceIntegration>"
+    COMMENT "Win deploy qt (integration test)"
+)

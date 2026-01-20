@@ -57,13 +57,13 @@ This section describes the main system functions grouped by purpose: photo manag
 
 ## 4. Non-Functional Requirements (NFR)
 
-| Category        | ID    | Description                                                    |
-| --------------- | ----- | -------------------------------------------------------------- |
-| **Performance** | NFR-1 | Load 10000 photos within 10 seconds after opening the catalog. |
-| **Reliability** | NFR-2 | Application autosaves the last opened folder and user session. |
-| **Usability**   | NFR-3 | Basic edit operation can be performed in max. 14 clicks.       |
-| **Portability** | NFR-4 | Works on Windows.                                              |
-| **Security**    | NFR-5 | Local data are stored privately and never shared.              |
+| Category        | ID    | Description                                                                                                 |
+| --------------- | ----- | ----------------------------------------------------------------------------------------------------------- |
+| **Performance** | NFR-1 | Load 10000 photos within 10 seconds after opening the catalog.                                              |
+| **Persistence** | NFR-2 | Tag and rating are saved locally and restored correctly after restarting the application (across sessions). |
+| **Usability**   | NFR-3 | Basic edit operation can be performed in max. 14 clicks.                                                    |
+| **Portability** | NFR-4 | Works on Windows.                                                                                           |
+| **Security**    | NFR-5 | Local data are stored privately and never shared.                                                           |
 
 ---
 
