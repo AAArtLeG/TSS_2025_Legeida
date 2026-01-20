@@ -12,9 +12,12 @@
 #include <QProgressBar>
 #include <utility>
 
+class tst_TSSProjectScrollGui;
+
 class TSS_project : public QMainWindow
 {
     Q_OBJECT
+    friend class tst_TSSProjectScrollThroughImgGUI;
 
 public:
     TSS_project(QWidget *parent = nullptr);

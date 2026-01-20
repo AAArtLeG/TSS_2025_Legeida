@@ -108,3 +108,36 @@ add_custom_command(TARGET tst_PersistenceIntegration
     COMMAND "${Qt6_BIN}/windeployqt.exe" "$<TARGET_FILE:tst_PersistenceIntegration>"
     COMMENT "Win deploy qt (integration test)"
 )
+
+# GUI Test: Opportunity to scroll if user want to display image, which is bigger than viewerPort
+
+set(Qt6_BIN "C:/Qt/${Qt6_Version}/msvc2022_64/bin")
+
+add_executable(tst_TSSProjectScrollThroughImgGUI
+    tests/tst_TSSProjectScrollThroughImgGUI.cpp
+    
+    src/TSS_project.cpp
+    src/ImageEditor.cpp
+    src/DataStorage.cpp
+    src/MetaDataStorage.cpp
+    src/ClickableImgs.cpp
+
+    src/TSS_project.ui
+    src/TSS_project.qrc
+)
+
+target_include_directories(tst_TSSProjectScrollThroughImgGUI
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+target_link_libraries(tst_TSSProjectScrollThroughImgGUI 
+    PRIVATE Qt6::Test Qt6::Core Qt6::Gui Qt6::Widgets
+)
+
+add_test(NAME gui_REQ-SCROLL COMMAND tst_TSSProjectScrollThroughImgGUI)
+
+add_custom_command(TARGET tst_TSSProjectScrollThroughImgGUI
+    POST_BUILD
+    COMMAND "${Qt6_BIN}/windeployqt.exe" "$<TARGET_FILE:tst_TSSProjectScrollThroughImgGUI>"
+    COMMENT "Win deploy qt (GUI test)"
+)
