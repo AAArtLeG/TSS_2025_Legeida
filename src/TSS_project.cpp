@@ -42,8 +42,9 @@ TSS_project::TSS_project(QWidget *parent)
     //I choose to install viewport as an event filter, because on this inner widget of graphicsView technically arrived all mouse events
     ui->graphicsView->viewport()->installEventFilter(this);
 
-    /*for (const QByteArray& f : QImageReader::supportedImageFormats())
-        qDebug() << f;*/
+    qDebug() << "Reader formats:" << QImageReader::supportedImageFormats();
+    qDebug() << "Writer formats:" << QImageWriter::supportedImageFormats();
+    qDebug() << "Qt library paths:" << QCoreApplication::libraryPaths();
 }
 
 TSS_project::~TSS_project()
@@ -297,7 +298,7 @@ void TSS_project::buildCurrentPage(int firstIdx) {
 
 void TSS_project::on_actionOpen_triggered()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
+	QString fileName = QFileDialog::getOpenFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif *.tif *.tiff);;All files (*.*)"));
     if (fileName.isEmpty()) return;
 
     if (!confirmUnsavedChanges())
@@ -365,7 +366,7 @@ bool TSS_project::saveCurrentImageAs() {
     QString prevPath = currentImgPath;
     int prevIdx = currentImgIdx;
 
-    QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.gif);;All files (*.*)"));
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Images (*.png *.jpg *.jpeg *.bmp *.tif *.tiff);;All files (*.*)"));
     if (fileName.isEmpty()) return false;
 
     if (QFileInfo(fileName).suffix().isEmpty())

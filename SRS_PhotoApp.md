@@ -36,9 +36,7 @@ This section describes the main system functions grouped by purpose: photo manag
 - FR-1.8: The user can tag, rate, and comment on individual photos.
 - FR-1.9: For each photo, it must be possible to add one tag and one rating (1–5). If no rating is provided, the photo is considered unrated.
 - FR-1.10: The user can search and filter photos by date, tag or rating.
-- FR-1.11: The user can edit or create new photo tag.
-- FR-1.12: The system can load and display large libraries (up to 10,000 photos) without excessive memory usage.
-- FR-1.13: The app automatically saves user data (tags, edits, queue) every 30 seconds or after major actions.
+- FR-1.11: The system can load and display large libraries (up to 10,000 photos) without excessive memory usage.
 
 ### 3.2 Photo Editing
 
@@ -47,8 +45,7 @@ This section describes the main system functions grouped by purpose: photo manag
 - FR-2.3: The user can apply edits to a single image or a group of selected images.
 - FR-2.4: The user can add a watermark or logo with adjustable position (corner selection) and transparency.
 - FR-2.5: The user can specify the watermark image.
-- FR-2.6: The system provides undo and redo options for basic edits.
-- FR-2.7: Each photo, either after editing or without any modifications, can be exported to `.jpg`, `.jpeg`,`.png`, `.tiff`, `.gif`, and `.bmp` formats.
+- FR-2.6: Each photo, either after editing or without any modifications, can be exported to `.jpg`, `.jpeg`,`.png`, `.tiff` and `.bmp` formats.
 
 ### 3.3 User Interface and Interaction
 

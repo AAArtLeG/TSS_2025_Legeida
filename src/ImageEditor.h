@@ -8,6 +8,8 @@
 
 class ImageEditor
 {
+	// for access for unit test to private methods rotateLeft and rotateRight 
+	friend class tst_ImageEditorRotateUnit;
 public:
 	void cleanEditor();
 
